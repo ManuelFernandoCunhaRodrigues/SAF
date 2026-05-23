@@ -6,7 +6,7 @@ import { UsersPage } from "@/features/users/pages/users-page";
 import { InvoicesPage } from "@/features/invoices/pages/invoices-page";
 import { SettingsPage } from "@/features/settings/pages/settings-page";
 import { NotFoundPage } from "@/overview/not-found/not-found-page";
-import { PanelLayout } from "@/shared/components/layout/panel-layout";
+import { PanelLayoutWithProvider } from "@/shared/components/layout/painel-layout-with-provider";
 import { ProtectedRoute } from "@/shared/components/common/protected-route";
 
 export function AppRoutes() {
@@ -18,7 +18,7 @@ export function AppRoutes() {
         path="/painel"
         element={
           <ProtectedRoute>
-            <PanelLayout />
+            <PanelLayoutWithProvider />
           </ProtectedRoute>
         }
       >
