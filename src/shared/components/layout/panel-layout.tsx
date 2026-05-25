@@ -1,5 +1,5 @@
 import { Outlet } from "react-router";
-import { useSidebarContext } from "@/shared/context/sidebar-context";
+import { useSidebarContext } from "@/shared/context/use-sidebar";
 import { Sidebar } from "./sidebar";
 import { MobileBottomNav } from "./mobile-bottom-nav";
 import { PainelHeader } from "./painel-header";

@@ -5,7 +5,7 @@ export async function loginService(credentials: LoginCredentials): Promise<AuthR
   try {
     const response = await api.post<AuthResponse>("/auth/login", credentials);
     return response.data;
-  } catch (error) {
+  } catch {
     // Mock response for demo purposes
     return {
       token: "mock-token-" + Date.now(),

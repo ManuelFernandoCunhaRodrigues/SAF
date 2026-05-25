@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router";
 
 import { loginSchema, type LoginFormData } from "../schemas/auth-schema";
-import { useAuthContext } from "@/app/providers/auth-provider";
+import { useAuthContext } from "@/app/providers/use-auth";
 import {
   Form,
   FormControl,

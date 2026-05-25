@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router";
-import { useAuthContext } from "@/app/providers/auth-provider";
+import { useAuthContext } from "@/app/providers/use-auth";
 
 const cn = (...classes: string[]) => {
   return classes.filter(Boolean).join(" ");
@@ -60,29 +60,6 @@ const DotMap = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
-  const routes: { start: RoutePoint; end: RoutePoint; color: string }[] = [
-    {
-      start: { x: 100, y: 150, delay: 0 },
-      end: { x: 200, y: 80, delay: 2 },
-      color: "#2563eb",
-    },
-    {
-      start: { x: 200, y: 80, delay: 2 },
-      end: { x: 260, y: 120, delay: 4 },
-      color: "#2563eb",
-    },
-    {
-      start: { x: 50, y: 50, delay: 1 },
-      end: { x: 150, y: 180, delay: 3 },
-      color: "#2563eb",
-    },
-    {
-      start: { x: 280, y: 60, delay: 0.5 },
-      end: { x: 180, y: 180, delay: 2.5 },
-      color: "#2563eb",
-    },
-  ];
-
   const generateDots = (width: number, height: number) => {
     const dots = [];
     const gap = 12;
@@ -134,6 +111,29 @@ const DotMap = () => {
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+
+    const routes: { start: RoutePoint; end: RoutePoint; color: string }[] = [
+      {
+        start: { x: 100, y: 150, delay: 0 },
+        end: { x: 200, y: 80, delay: 2 },
+        color: "#2563eb",
+      },
+      {
+        start: { x: 200, y: 80, delay: 2 },
+        end: { x: 260, y: 120, delay: 4 },
+        color: "#2563eb",
+      },
+      {
+        start: { x: 50, y: 50, delay: 1 },
+        end: { x: 150, y: 180, delay: 3 },
+        color: "#2563eb",
+      },
+      {
+        start: { x: 280, y: 60, delay: 0.5 },
+        end: { x: 180, y: 180, delay: 2.5 },
+        color: "#2563eb",
+      },
+    ];
 
     const dots = generateDots(dimensions.width, dimensions.height);
     let animationFrameId: number;

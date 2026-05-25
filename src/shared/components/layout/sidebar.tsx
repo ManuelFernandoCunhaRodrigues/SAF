@@ -8,7 +8,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
 } from "lucide-react";
-import { useSidebarContext } from "@/shared/context/sidebar-context";
+import { useSidebarContext } from "@/shared/context/use-sidebar";
 import { cn } from "@/shared/lib/utils";
 
 const NAV_ITEMS = [

@@ -1,7 +1,7 @@
 import { useLocation } from "react-router";
 import { Bell, Menu, X, Link2, Zap } from "lucide-react";
 import { motion } from "framer-motion";
-import { useAuthContext } from "@/app/providers/auth-provider";
+import { useAuthContext } from "@/app/providers/use-auth";
 
 const pageTitles: Record<string, string> = {
   "/painel/dashboard": "Dashboard",
