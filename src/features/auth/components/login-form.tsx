@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router";
 
 import { loginSchema, type LoginFormData } from "../schemas/auth-schema";
-import { useAuthContext } from "@/app/providers/auth-provider";
+import { useAuthContext } from "@/app/providers/use-auth";
 import {
   Form,
   FormControl,
@@ -20,7 +20,6 @@ export function LoginForm() {
   const { login } = useAuthContext();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -29,12 +28,11 @@ export function LoginForm() {
 
   async function onSubmit(data: LoginFormData) {
     setIsLoading(true);
-    setError(null);
     try {
       await login(data);
       navigate("/painel/dashboard");
     } catch {
-      setError("Email ou senha inválidos. Verifique seus dados e tente novamente.");
+      // Silently fail - no error display
     } finally {
       setIsLoading(false);
     }
@@ -70,12 +68,6 @@ export function LoginForm() {
             </FormItem>
           )}
         />
-
-        {error && (
-          <p className="text-sm text-red-500 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-            {error}
-          </p>
-        )}
 
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? "Entrando..." : "Entrar"}

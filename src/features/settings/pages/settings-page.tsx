@@ -8,10 +8,14 @@ import {
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Button } from "@/shared/components/ui/button";
-import { useAuthContext } from "@/app/providers/auth-provider";
 
 export function SettingsPage() {
-  const { user } = useAuthContext();
+  // Mock user data
+  const user = {
+    name: "Vinicius Morais",
+    email: "vinicius123morais@gmail.com",
+    role: "admin",
+  };
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -96,7 +100,7 @@ export function SettingsPage() {
             {[
               { label: "Sistema", value: "SAF — Sistema de Administração e Finanças" },
               { label: "Versão", value: "1.0.0" },
-              { label: "Ambiente", value: import.meta.env.MODE },
+              { label: "Ambiente", value: "development" },
             ].map((item) => (
               <div key={item.label} className="flex justify-between py-1.5 border-b last:border-0">
                 <span className="text-zinc-500">{item.label}</span>

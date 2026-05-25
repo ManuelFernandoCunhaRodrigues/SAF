@@ -1,10 +1,13 @@
 import { Plus } from "lucide-react";
-import { useUsers } from "../hooks/use-users";
-import { UserCard } from "../components/user-card";
 import { Button } from "@/shared/components/ui/button";
 
 export function UsersPage() {
-  const { data, isLoading, isError } = useUsers();
+  // Mock data
+  const users = [
+    { id: "1", name: "João Silva", email: "joao@example.com", role: "Admin" },
+    { id: "2", name: "Maria Santos", email: "maria@example.com", role: "User" },
+    { id: "3", name: "Pedro Oliveira", email: "pedro@example.com", role: "User" },
+  ];
 
   return (
     <div className="space-y-6">
@@ -21,25 +24,21 @@ export function UsersPage() {
         </Button>
       </div>
 
-      {isLoading && (
-        <p className="text-zinc-400">Carregando usuários...</p>
-      )}
-
-      {isError && (
-        <p className="text-red-500">Erro ao carregar usuários.</p>
-      )}
-
-      {!isLoading && !isError && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {data && data.length > 0 ? (
-            data.map((user) => <UserCard key={user.id} user={user} />)
-          ) : (
-            <p className="text-zinc-400 col-span-full">
-              Nenhum usuário encontrado.
-            </p>
-          )}
-        </div>
-      )}
+      <div className="grid grid-cols-1 gap-4">
+        {users.map((user) => (
+          <div key={user.id} className="bg-white p-4 rounded-lg border border-zinc-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-medium text-zinc-900">{user.name}</h3>
+                <p className="text-sm text-zinc-500">{user.email}</p>
+              </div>
+              <span className="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-full">
+                {user.role}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
