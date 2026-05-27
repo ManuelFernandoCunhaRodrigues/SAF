@@ -12,17 +12,16 @@ import { useSidebarContext } from "@/shared/context/use-sidebar";
 import { cn } from "@/shared/lib/utils";
 
 const NAV_ITEMS = [
-  { label: "Dashboard", href: "/painel/dashboard", icon: LayoutDashboard },
-  { label: "Usuários", href: "/painel/usuarios", icon: Users },
-  { label: "Faturas", href: "/painel/faturas", icon: FileText },
-  { label: "Configurações", href: "/painel/configuracoes", icon: Settings },
+  { label: "Dashboard",     href: "/painel/dashboard",      icon: LayoutDashboard },
+  { label: "Usuários",      href: "/painel/usuarios",        icon: Users },
+  { label: "Faturas",       href: "/painel/faturas",         icon: FileText },
+  { label: "Configurações", href: "/painel/configuracoes",   icon: Settings },
 ];
 
 export function Sidebar() {
   const { isExpanded, setIsExpanded } = useSidebarContext();
   const location = useLocation();
 
-  // Mock user data
   const user = {
     name: "Vinicius Morais",
     email: "vinicius123morais@gmail.com",
@@ -31,42 +30,37 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "hidden md:flex flex-col h-screen bg-white border-r border-zinc-200 shadow-sm transition-[width] duration-300 overflow-hidden fixed left-0 top-0",
+        "hidden md:flex flex-col h-screen bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 shadow-sm transition-all duration-300 overflow-hidden fixed left-0 top-0",
         isExpanded ? "w-60" : "w-16"
       )}
     >
-      {/* Header com brand */}
-      <div className="h-16 px-4 flex items-center justify-between border-b border-zinc-200 shrink-0">
+      {/* Brand */}
+      <div className="h-16 px-4 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 shrink-0">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shrink-0 text-white font-bold text-sm">
             S
           </div>
           {isExpanded && (
             <div className="min-w-0">
-              <p className="font-bold text-zinc-900 leading-none">SAF</p>
-              <p className="text-[11px] text-zinc-500 mt-0.5">Admin Panel</p>
+              <p className="font-bold text-zinc-900 dark:text-zinc-100 leading-none">SAF</p>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Admin Panel</p>
             </div>
           )}
         </div>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="p-1.5 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded-lg transition-colors shrink-0"
+          className="p-1.5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors shrink-0"
           title={isExpanded ? "Encolher sidebar" : "Expandir sidebar"}
         >
-          {isExpanded ? (
-            <PanelLeftClose size={20} />
-          ) : (
-            <PanelLeftOpen size={20} />
-          )}
+          {isExpanded ? <PanelLeftClose size={20} /> : <PanelLeftOpen size={20} />}
         </button>
       </div>
 
-      {/* Navigation items */}
+      {/* Nav */}
       <nav className="flex-1 p-3 space-y-1 overflow-hidden">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.href;
-
           return (
             <Link
               key={item.href}
@@ -76,8 +70,8 @@ export function Sidebar() {
                 "flex items-center gap-3 rounded-lg text-sm font-medium transition-all",
                 isExpanded ? "px-3 py-2.5" : "justify-center py-2.5 px-0",
                 isActive
-                  ? "bg-blue-50 text-blue-600 shadow-sm"
-                  : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+                  ? "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 shadow-sm"
+                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100"
               )}
             >
               <Icon size={18} className="shrink-0" />
@@ -88,7 +82,7 @@ export function Sidebar() {
       </nav>
 
       {/* User card */}
-      <div className="p-3 border-t border-zinc-200 shrink-0">
+      <div className="p-3 border-t border-zinc-200 dark:border-zinc-800 shrink-0">
         <div
           className={cn(
             "flex items-center rounded-lg mb-2",
@@ -100,10 +94,10 @@ export function Sidebar() {
           </div>
           {isExpanded && (
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-zinc-900 truncate">
+              <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">
                 {user?.name ?? "Usuário"}
               </p>
-              <p className="text-xs text-zinc-500 truncate">{user?.email}</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{user?.email}</p>
             </div>
           )}
         </div>
@@ -111,7 +105,7 @@ export function Sidebar() {
           onClick={() => console.log("Logout")}
           title={!isExpanded ? "Sair da conta" : undefined}
           className={cn(
-            "w-full text-sm text-zinc-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors",
+            "w-full text-sm text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors",
             isExpanded ? "flex items-center gap-2 px-3 py-2" : "flex justify-center py-2"
           )}
         >

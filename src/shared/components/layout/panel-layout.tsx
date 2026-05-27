@@ -8,11 +8,9 @@ export function PanelLayout() {
   const { isExpanded } = useSidebarContext();
 
   return (
-    <div className="flex min-h-screen bg-zinc-50">
-      {/* Sidebar - Desktop only */}
+    <div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-950 transition-colors duration-200">
       <Sidebar />
 
-      {/* Main content area - com margin-left dinâmico baseado em isExpanded */}
       <main
         className={`flex-1 flex flex-col min-w-0 overflow-hidden hidden md:flex transition-all duration-300 ${
           isExpanded ? "ml-60" : "ml-16"
@@ -24,7 +22,6 @@ export function PanelLayout() {
         </div>
       </main>
 
-      {/* Mobile bottom nav */}
       <MobileBottomNav />
     </div>
   );
