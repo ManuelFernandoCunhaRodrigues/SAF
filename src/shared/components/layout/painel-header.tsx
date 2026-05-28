@@ -1,50 +1,60 @@
-import { Bell, Link2, Zap } from "lucide-react";
+import { Bell, Link2, Zap, Moon, Sun } from "lucide-react";
+import { useTheme } from "@/shared/context/theme-context";
 
 export function PainelHeader() {
-  // Mock user data
+  const { theme, toggleTheme } = useTheme();
+
   const user = {
     name: "Vinicius Morais",
     role: "admin",
   };
 
   return (
-    <header className="h-16 border-b border-zinc-200 bg-white flex items-center justify-between px-6 shrink-0">
+    <header className="h-16 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center justify-between px-6 shrink-0 transition-colors duration-200">
       <div className="flex items-center gap-4">
-        <h1 className="text-lg font-semibold text-zinc-800">Dashboard</h1>
+        <h1 className="text-lg font-semibold text-zinc-800 dark:text-zinc-100">Dashboard</h1>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
         <button
-          className="p-2 text-zinc-400 hover:text-zinc-700 rounded-lg hover:bg-zinc-100 transition-colors relative"
+          onClick={toggleTheme}
+          className="p-2 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+          title={theme === "dark" ? "Modo claro" : "Modo escuro"}
+        >
+          {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+        </button>
+
+        <button
+          className="p-2 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors relative"
           title="Notificações"
         >
-          <Bell size={20} />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+          <Bell size={18} />
+          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full" />
         </button>
 
         <button
-          className="p-2 text-zinc-400 hover:text-zinc-700 rounded-lg hover:bg-zinc-100 transition-colors"
+          className="p-2 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
           title="Compartilhar link"
         >
-          <Link2 size={20} />
+          <Link2 size={18} />
         </button>
 
         <button
-          className="p-2 text-zinc-400 hover:text-zinc-700 rounded-lg hover:bg-zinc-100 transition-colors"
+          className="p-2 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
           title="Atalhos"
         >
-          <Zap size={20} />
+          <Zap size={18} />
         </button>
 
-        <div className="flex items-center gap-2.5 pl-3 border-l border-zinc-200">
+        <div className="flex items-center gap-2.5 pl-3 ml-1 border-l border-zinc-200 dark:border-zinc-700">
           <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-sm font-semibold text-white shrink-0">
             {user?.name?.charAt(0).toUpperCase() ?? "U"}
           </div>
           <div className="hidden sm:block">
-            <p className="text-sm font-medium text-zinc-700 leading-none">
+            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200 leading-none">
               {user?.name ?? "Usuário"}
             </p>
-            <p className="text-xs text-zinc-400 mt-0.5">
+            <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
               {user?.role === "admin" ? "Administrador" : "Usuário"}
             </p>
           </div>
