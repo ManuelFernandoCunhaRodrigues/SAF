@@ -1,60 +1,54 @@
-import { Bell, Link2, Zap, Moon, Sun } from "lucide-react";
+import { Bell, Moon, Sun } from "lucide-react";
+import { useLocation } from "react-router";
 import { useTheme } from "@/shared/context/theme-context";
+import { useAuthContext } from "@/app/providers/use-auth";
+
+const ROUTE_LABELS: Record<string, string> = {
+  "/painel/dashboard":     "Dashboard",
+  "/painel/usuarios":      "Usuários",
+  "/painel/faturas":       "Cobranças",
+  "/painel/configuracoes": "Configurações",
+};
 
 export function PainelHeader() {
   const { theme, toggleTheme } = useTheme();
+  const { pathname } = useLocation();
+  const { user } = useAuthContext();
 
-  const user = {
-    name: "Vinicius Morais",
-    role: "admin",
-  };
+  const pageTitle = ROUTE_LABELS[pathname] ?? "Painel";
 
   return (
-    <header className="h-16 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center justify-between px-6 shrink-0 transition-colors duration-200">
-      <div className="flex items-center gap-4">
-        <h1 className="text-lg font-semibold text-zinc-800 dark:text-zinc-100">Dashboard</h1>
-      </div>
+    <header className="h-16 border-b border-zinc-100 dark:border-[#27272A] bg-white dark:bg-[#09090B] flex items-center justify-between px-6 shrink-0 transition-colors duration-200">
+      <h1 className="text-[15px] font-semibold text-zinc-800 dark:text-[#F1F5F9] tracking-tight">
+        {pageTitle}
+      </h1>
 
       <div className="flex items-center gap-1">
         <button
           onClick={toggleTheme}
-          className="p-2 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+          className="p-2 text-zinc-400 dark:text-[#64748B] hover:text-zinc-700 dark:hover:text-[#F1F5F9] rounded-lg hover:bg-zinc-100 dark:hover:bg-[#27272A] transition-colors"
           title={theme === "dark" ? "Modo claro" : "Modo escuro"}
         >
-          {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+          {theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}
         </button>
 
         <button
-          className="p-2 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors relative"
+          className="p-2 text-zinc-400 dark:text-[#64748B] hover:text-zinc-700 dark:hover:text-[#F1F5F9] rounded-lg hover:bg-zinc-100 dark:hover:bg-[#27272A] transition-colors relative"
           title="Notificações"
         >
-          <Bell size={18} />
+          <Bell size={17} />
           <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full" />
         </button>
 
-        <button
-          className="p-2 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-          title="Compartilhar link"
-        >
-          <Link2 size={18} />
-        </button>
-
-        <button
-          className="p-2 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-          title="Atalhos"
-        >
-          <Zap size={18} />
-        </button>
-
-        <div className="flex items-center gap-2.5 pl-3 ml-1 border-l border-zinc-200 dark:border-zinc-700">
-          <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-sm font-semibold text-white shrink-0">
+        <div className="flex items-center gap-2.5 pl-3 ml-1 border-l border-zinc-100 dark:border-[#27272A]">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-sm font-semibold text-white shrink-0">
             {user?.name?.charAt(0).toUpperCase() ?? "U"}
           </div>
           <div className="hidden sm:block">
-            <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200 leading-none">
+            <p className="text-sm font-medium text-zinc-700 dark:text-[#F1F5F9] leading-none">
               {user?.name ?? "Usuário"}
             </p>
-            <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
+            <p className="text-[11px] text-zinc-400 dark:text-[#64748B] mt-0.5">
               {user?.role === "admin" ? "Administrador" : "Usuário"}
             </p>
           </div>
