@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAuthContext } from "@/app/providers/use-auth";
 import {
   Calendar, Plus, TrendingUp, TrendingDown,
-  MessageSquare, Phone, Zap,
+  MessageSquare, Zap,
   AlertTriangle, DollarSign, Clock, CheckCircle,
   FileText, ArrowRight, Download, FileSpreadsheet, FileDown,
 } from "lucide-react";
