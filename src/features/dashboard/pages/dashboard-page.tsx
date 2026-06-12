@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useAuthContext } from "@/app/providers/use-auth";
 import {
   Calendar, Plus, TrendingUp, TrendingDown,
-  MessageSquare, Phone, Zap,
+  MessageSquare, Zap,
   AlertTriangle, DollarSign, Clock, CheckCircle,
-  FileText, ArrowRight,
+  FileText, ArrowRight, Download, FileSpreadsheet, FileDown,
 } from "lucide-react";
 
 /* ─── tipos ─── */
@@ -52,7 +53,91 @@ const BARS = [
 /* ─── card base reutilizável ─── */
 const C = "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm";
 
+/* ─── export helpers ─── */
+function triggerDownload(content: string, filename: string, mime: string) {
+  const blob = new Blob(["﻿" + content], { type: mime });
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement("a"), { href: url, download: filename });
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function exportCSV() {
+  const headers = ["Cliente", "Documento", "Vencimento", "Canal", "Status", "Etapa", "Valor"];
+  const rows = COBRANCAS.map((c) => [c.cliente, c.doc, c.venc, c.canal, c.status, c.etapa, c.valor]);
+  const csv = [headers, ...rows].map((r) => r.map((v) => `"${v}"`).join(";")).join("\n");
+  triggerDownload(csv, "relatorio-cobrancas.csv", "text/csv;charset=utf-8");
+}
+
+function exportXLS() {
+  const th = ["Cliente", "Documento", "Vencimento", "Canal", "Status", "Etapa", "Valor"];
+  const trs = COBRANCAS.map(
+    (c) => `<tr>${[c.cliente, c.doc, c.venc, c.canal, c.status, c.etapa, c.valor].map((v) => `<td>${v}</td>`).join("")}</tr>`
+  ).join("");
+  const xls = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"/></head><body><table><tr>${th.map((h) => `<th>${h}</th>`).join("")}</tr>${trs}</table></body></html>`;
+  triggerDownload(xls, "relatorio-cobrancas.xls", "application/vnd.ms-excel");
+}
+
+function exportPDF() {
+  window.print();
+}
+
+/* ─── componente ExportMenu ─── */
+function ExportMenu() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const options = [
+    { label: "Exportar CSV",  Icon: FileText,  action: exportCSV,  cls: "text-blue-600 dark:text-blue-400",    iBg: "bg-blue-50 dark:bg-blue-500/10" },
+    { label: "Exportar XLS",  Icon: FileSpreadsheet, action: exportXLS, cls: "text-emerald-600 dark:text-emerald-400", iBg: "bg-emerald-50 dark:bg-emerald-500/10" },
+    { label: "Exportar PDF",  Icon: FileDown,  action: exportPDF,  cls: "text-red-500 dark:text-red-400",      iBg: "bg-red-50 dark:bg-red-500/10" },
+  ];
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center gap-2 px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-xs text-zinc-600 dark:text-zinc-300 font-medium shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors whitespace-nowrap"
+      >
+        <Download size={13} className="text-zinc-400 dark:text-zinc-500" />
+        Exportar
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-1.5 w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-lg z-50 overflow-hidden py-1">
+          <p className="px-4 pt-2 pb-1.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+            Formato do relatório
+          </p>
+          {options.map(({ label, Icon, action, cls, iBg }) => (
+            <button
+              key={label}
+              onClick={() => { action(); setOpen(false); }}
+              className="w-full px-4 py-2.5 text-left text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-3 transition-colors"
+            >
+              <div className={`w-6 h-6 rounded-md ${iBg} flex items-center justify-center flex-shrink-0`}>
+                <Icon size={12} className={cls} />
+              </div>
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function DashboardPage() {
+  const { user } = useAuthContext();
   const [animated, setAnimated] = useState(false);
   const [filter, setFilter] = useState<"Diário" | "Semanal" | "Mensal">("Mensal");
 
@@ -68,7 +153,7 @@ export function DashboardPage() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-[19px] font-bold text-zinc-800 dark:text-zinc-100 tracking-tight">
-            Bem-vindo de volta, Manuel 👋
+            Bem-vindo de volta, {user?.name ?? "Usuário"} 👋
           </h1>
           <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
             Gerencie cobranças automáticas, mensagens e pagamentos via WhatsApp
@@ -79,6 +164,7 @@ export function DashboardPage() {
             <Calendar size={12} className="text-zinc-400 dark:text-zinc-500" />
             Últimos 30 dias
           </button>
+          <ExportMenu />
           <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors whitespace-nowrap">
             <Plus size={12} strokeWidth={2.8} />
             Nova Automação
@@ -290,7 +376,6 @@ export function DashboardPage() {
             { Icon: MessageSquare, name: "WhatsApp",      desc: "Mensagens automáticas", count: "968", pct: "52%", iBg: "bg-green-50 dark:bg-green-500/10",   iC: "text-green-600 dark:text-green-400" },
             { Icon: DollarSign,    name: "Pix gerado",    desc: "Chave e QR code",       count: "448", pct: "24%", iBg: "bg-blue-50 dark:bg-blue-500/10",     iC: "text-blue-600 dark:text-blue-400" },
             { Icon: FileText,      name: "Boleto emitido",desc: "PDF + código barras",   count: "280", pct: "15%", iBg: "bg-violet-50 dark:bg-violet-500/10", iC: "text-violet-600 dark:text-violet-400" },
-            { Icon: Phone,         name: "SMS",           desc: "Alertas de vencimento", count: "151", pct: "9%",  iBg: "bg-amber-50 dark:bg-amber-500/10",   iC: "text-amber-600 dark:text-amber-400" },
           ].map((ch) => {
             const Icon = ch.Icon;
             return (
