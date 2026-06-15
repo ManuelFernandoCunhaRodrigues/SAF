@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { AuthUser, LoginCredentials } from "@/features/auth/types/auth";
+import { loginService, logoutService } from "@/features/auth/services/auth-service";
 import { AuthContext } from "./auth-context";
 
 function getInitialUser(): AuthUser | null {
@@ -19,21 +20,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(getInitialUser);
 
   async function login(credentials: LoginCredentials) {
-    // Mock login - sem requisição à API
-    const mockUser: AuthUser = {
-      id: "1",
-      email: credentials.email,
-      name: credentials.email.split("@")[0],
-      role: "admin"
-    };
-    localStorage.setItem("@saf:token", "mock-token-" + Date.now());
-    localStorage.setItem("@saf:user", JSON.stringify(mockUser));
-    setUser(mockUser);
+    const { token, user } = await loginService(credentials);
+    localStorage.setItem("@saf:token", token);
+    localStorage.setItem("@saf:user", JSON.stringify(user));
+    setUser(user);
   }
 
   function logout() {
-    localStorage.removeItem("@saf:token");
-    localStorage.removeItem("@saf:user");
+    logoutService();
     setUser(null);
   }
 

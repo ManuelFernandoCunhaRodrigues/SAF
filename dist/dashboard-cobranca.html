@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAF — Painel de Cobrança</title>
+<style>
+:root {
+  --bg: #f8f8f9;
+  --card: #ffffff;
+  --border: #e4e4e7;
+  --zinc-800: #27272a;
+  --zinc-700: #3f3f46;
+  --zinc-600: #52525b;
+  --zinc-500: #71717a;
+  --zinc-400: #a1a1aa;
+  --zinc-100: #f4f4f5;
+  --blue-600: #2563eb;
+  --blue-500: #3b82f6;
+  --blue-50: #eff6ff;
+  --violet-600: #7c3aed;
+  --violet-50: #f5f3ff;
+  --emerald-600: #059669;
+  --emerald-500: #10b981;
+  --emerald-50: #ecfdf5;
+  --amber-600: #d97706;
+  --amber-500: #f59e0b;
+  --amber-50: #fffbeb;
+  --red-500: #ef4444;
+  --red-50: #fef2f2;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;background:var(--bg);color:var(--zinc-800)}
+
+/* ── Layout ── */
+.app{display:flex;height:100vh;overflow:hidden}
+
+/* ── Sidebar ── */
+.sidebar{width:64px;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:14px 0;flex-shrink:0}
+.sb-logo{width:36px;height:36px;border-radius:10px;background:var(--blue-600);display:flex;align-items:center;justify-content:center;margin-bottom:22px}
+.sb-nav{display:flex;flex-direction:column;gap:3px;flex:1}
+.sb-btn{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--zinc-400);border:none;background:transparent;transition:all .15s}
+.sb-btn:hover{background:var(--zinc-100);color:var(--zinc-600)}
+.sb-btn.active{background:var(--blue-50);color:var(--blue-600)}
+.sb-bottom{display:flex;flex-direction:column;gap:3px}
+
+/* ── Main ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── Topbar ── */
+.topbar{height:54px;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:14px;flex-shrink:0}
+.tb-brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;color:var(--zinc-800);white-space:nowrap}
+.tb-brand small{font-size:11px;font-weight:500;color:var(--zinc-500);border-left:1px solid var(--border);padding-left:10px;margin-left:2px}
+.tb-nav{display:flex;gap:2px;flex:1}
+.nav-btn{padding:5px 11px;border-radius:7px;font-size:13px;font-weight:500;color:var(--zinc-500);border:none;background:transparent;cursor:pointer;transition:all .15s}
+.nav-btn:hover{background:var(--zinc-100);color:var(--zinc-700)}
+.nav-btn.active{background:var(--blue-50);color:var(--blue-600);font-weight:600}
+.tb-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.search{display:flex;align-items:center;gap:6px;background:var(--zinc-100);border-radius:8px;padding:6px 10px;font-size:12px;color:var(--zinc-400);width:180px;cursor:text}
+.icon-btn{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--zinc-500);background:transparent;border:none;cursor:pointer;transition:background .15s;position:relative}
+.icon-btn:hover{background:var(--zinc-100)}
+.notif-dot{position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;background:var(--red-500);border:1.5px solid white}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--blue-500),var(--violet-600));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;cursor:pointer}
+
+/* ── Content ── */
+.content{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:18px}
+
+/* ── Card ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+
+/* ── Page header ── */
+.pg-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.pg-hdr h1{font-size:19px;font-weight:700;color:var(--zinc-800);letter-spacing:-.3px}
+.pg-hdr p{font-size:13px;color:var(--zinc-500);margin-top:3px}
+.hdr-actions{display:flex;gap:8px;flex-shrink:0}
+.btn-ghost{display:flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid var(--border);border-radius:8px;background:white;font-size:12px;font-weight:500;color:var(--zinc-600);cursor:pointer}
+.btn-primary{display:flex;align-items:center;gap:6px;padding:7px 14px;background:var(--blue-600);border:none;border-radius:8px;font-size:12px;font-weight:600;color:white;cursor:pointer;transition:background .15s}
+.btn-primary:hover{background:#1d4ed8}
+
+/* ── KPIs ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.kpi-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.04);display:flex;align-items:center;gap:13px}
+.kpi-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.kpi-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--zinc-500)}
+.kpi-value{font-size:21px;font-weight:700;color:var(--zinc-800);margin-top:2px;letter-spacing:-.5px;line-height:1}
+.kpi-meta{display:flex;align-items:center;gap:5px;margin-top:6px}
+.kpi-sub{font-size:10px;color:var(--zinc-400)}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:700}
+.bg-up{background:var(--emerald-50);color:var(--emerald-600)}
+.bg-dn{background:var(--red-50);color:var(--red-500)}
+.bg-nt{background:var(--zinc-100);color:var(--zinc-600)}
+
+/* ── Mid grid ── */
+.mid-grid{display:grid;grid-template-columns:1fr 268px;gap:14px}
+
+/* ── Card header ── */
+.chdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px}
+.chdr-title{font-size:14px;font-weight:700;color:var(--zinc-800)}
+.chdr-sub{font-size:11px;color:var(--zinc-500);margin-top:2px}
+.ftabs{display:flex;gap:4px}
+.ftab{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;border:1px solid var(--border);background:white;color:var(--zinc-500);cursor:pointer;transition:all .15s}
+.ftab.active{background:var(--blue-600);color:white;border-color:var(--blue-600)}
+
+/* ── Chart ── */
+.chart-sum{display:flex;gap:20px;margin-bottom:14px;align-items:center}
+.cs-item p:first-child{font-size:10px;color:var(--zinc-400)}
+.cs-item p:last-child{font-size:15px;font-weight:700;color:var(--zinc-800);margin-top:1px}
+.legend{display:flex;gap:14px;margin-left:auto}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--zinc-500)}
+.leg-dot{width:8px;height:8px;border-radius:2px}
+.chart-wrap{display:flex;gap:8px}
+.y-axis{display:flex;flex-direction:column;justify-content:space-between;text-align:right;padding-bottom:22px;flex-shrink:0}
+.y-axis span{font-size:10px;color:var(--zinc-400)}
+.chart-inner{flex:1;display:flex;flex-direction:column}
+.gridlines{display:flex;flex-direction:column;justify-content:space-between;height:32px}
+.gl{height:1px;background:var(--zinc-100)}
+.bars-row{display:flex;align-items:flex-end;gap:8px;height:150px;padding-top:8px}
+.bar-group{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end;position:relative}
+.bar-group-inner{display:flex;gap:3px;align-items:flex-end;width:100%;height:100%;justify-content:center}
+.bar{flex:1;border-radius:4px 4px 0 0;transition:height .8s cubic-bezier(.34,1.26,.64,1);max-width:16px}
+.bar-lbl{font-size:10px;font-weight:600;color:var(--zinc-400)}
+.hi-badge{position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:var(--emerald-500);color:white;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;white-space:nowrap}
+.hi-badge::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:4px solid transparent;border-top-color:var(--emerald-500)}
+
+/* ── Flow ── */
+.flow-steps{display:flex;flex-direction:column}
+.flow-step{display:flex;align-items:flex-start;gap:10px;position:relative;padding-bottom:14px}
+.flow-step:last-child{padding-bottom:0}
+.flow-line{position:absolute;left:13px;top:26px;bottom:0;width:1px;background:var(--border)}
+.flow-step:last-child .flow-line{display:none}
+.flow-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:9px;font-weight:700;z-index:1}
+.flow-body{flex:1}
+.flow-name{font-size:12px;font-weight:600;color:var(--zinc-800)}
+.flow-desc{font-size:10px;color:var(--zinc-400);margin-top:1px}
+.flow-stat{font-size:10px;font-weight:700;color:var(--emerald-600);margin-top:3px}
+
+/* ── Bottom 3-col ── */
+.bot3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+
+/* Progress bars */
+.pbar-row{margin-top:10px}
+.pbar-row:first-of-type{margin-top:0}
+.pbar-hdr{display:flex;justify-content:space-between;margin-bottom:4px}
+.pbar-hdr span:first-child{font-size:12px;color:var(--zinc-700)}
+.pbar-hdr span:last-child{font-size:12px;font-weight:700;color:var(--zinc-800)}
+.pbar-track{height:5px;background:var(--zinc-100);border-radius:99px;overflow:hidden}
+.pbar-fill{height:100%;border-radius:99px;transition:width .8s ease}
+
+/* Channel items */
+.ch-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--zinc-100)}
+.ch-item:last-child{border-bottom:none;padding-bottom:0}
+.ch-item:first-child{padding-top:0}
+.ch-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ch-info{flex:1}
+.ch-name{font-size:12px;font-weight:600;color:var(--zinc-800)}
+.ch-meta{font-size:10px;color:var(--zinc-400);margin-top:1px}
+.ch-count{font-size:14px;font-weight:700;color:var(--zinc-800);text-align:right}
+.ch-pct{font-size:10px;color:var(--zinc-400);text-align:right}
+
+/* Messages */
+.msg-item{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--zinc-100)}
+.msg-item:last-child{border-bottom:none;padding-bottom:0}
+.msg-item:first-child{padding-top:0}
+.msg-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:white;flex-shrink:0}
+.msg-info{flex:1;min-width:0}
+.msg-name{font-size:12px;font-weight:600;color:var(--zinc-800)}
+.msg-type{font-size:10px;color:var(--zinc-400);margin-top:1px}
+.msg-right{text-align:right;flex-shrink:0}
+.msg-time{font-size:10px;color:var(--zinc-400)}
+.sbadge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:700;margin-top:3px}
+.s-em{background:var(--emerald-50);color:var(--emerald-600)}
+.s-am{background:var(--amber-50);color:var(--amber-600)}
+.s-bl{background:var(--blue-50);color:var(--blue-600)}
+.s-rd{background:var(--red-50);color:var(--red-500)}
+.s-vi{background:var(--violet-50);color:var(--violet-600)}
+
+/* Table */
+table{width:100%;border-collapse:collapse}
+thead tr{border-bottom:1px solid var(--zinc-100)}
+th{padding-bottom:9px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--zinc-400);text-align:left}
+th.tr{text-align:right}
+td{padding:11px 0;border-bottom:1px solid #f9f9f9;font-size:12px;color:var(--zinc-700)}
+td.px{padding-left:14px;padding-right:14px}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafafa}
+.cl-name{font-size:13px;font-weight:600;color:var(--zinc-800)}
+.cl-doc{font-size:10px;color:var(--zinc-400)}
+.etapa{display:inline-block;padding:2px 8px;border-radius:5px;font-size:10px;font-weight:600;background:var(--zinc-100);color:var(--zinc-600)}
+
+/* Conversion + Activity */
+.bot2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.conv-item{padding:10px 0;border-bottom:1px solid var(--zinc-100)}
+.conv-item:last-child{border-bottom:none;padding-bottom:0}
+.conv-item:first-child{padding-top:0}
+.conv-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.conv-name{font-size:12px;font-weight:600;color:var(--zinc-700)}
+.conv-pct{font-size:13px;font-weight:700;color:var(--zinc-800)}
+.conv-sub{font-size:10px;color:var(--zinc-400);margin-bottom:6px}
+.act-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--zinc-100)}
+.act-item:last-child{border-bottom:none;padding-bottom:0}
+.act-item:first-child{padding-top:0}
+.act-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.act-text p{font-size:12px;color:var(--zinc-700);line-height:1.4}
+.act-text span{font-size:10px;color:var(--zinc-400);display:block;margin-top:1px}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path fill="white" d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg>
+    </div>
+    <nav class="sb-nav">
+      <button class="sb-btn active" title="Dashboard"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></button>
+      <button class="sb-btn" title="Clientes"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a7 7 0 0114 0v2"/><circle cx="19" cy="11" r="3"/><path d="M22 21v-1a4 4 0 00-5-3.8"/></svg></button>
+      <button class="sb-btn" title="Mensagens"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></button>
+      <button class="sb-btn" title="Cobranças"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></button>
+      <button class="sb-btn" title="Pagamentos"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6"/></svg></button>
+      <button class="sb-btn" title="Relatórios"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></button>
+    </nav>
+    <div class="sb-bottom">
+      <button class="sb-btn" title="Configurações"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>
+      <button class="sb-btn" title="Sair"><svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg></button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="tb-brand">SAF <small>Painel de Cobrança</small></div>
+      <nav class="tb-nav">
+        <button class="nav-btn active">Dashboard</button>
+        <button class="nav-btn">Automações</button>
+        <button class="nav-btn">Cobranças</button>
+        <button class="nav-btn">Conversas</button>
+        <button class="nav-btn">Relatórios</button>
+      </nav>
+      <div class="tb-right">
+        <div class="search">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          Buscar...
+        </div>
+        <button class="icon-btn">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <span class="notif-dot"></span>
+        </button>
+        <div class="avatar">MR</div>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <main class="content">
+
+      <!-- Page header -->
+      <div class="pg-hdr">
+        <div>
+          <h1>Bem-vindo de volta, Manuel 👋</h1>
+          <p>Gerencie cobranças automáticas, mensagens e pagamentos via WhatsApp</p>
+        </div>
+        <div class="hdr-actions">
+          <button class="btn-ghost">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            Últimos 30 dias
+          </button>
+          <button class="btn-primary">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            Nova Automação
+          </button>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:var(--blue-50)">
+            <svg width="19" height="19" fill="none" stroke="var(--blue-600)" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 014 12.84a19.79 19.79 0 01-3.07-8.67A2 2 0 012.91 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+          </div>
+          <div>
+            <div class="kpi-label">Cobranças enviadas</div>
+            <div class="kpi-value">1.847</div>
+            <div class="kpi-meta"><span class="badge bg-up">↑ +14,2%</span><span class="kpi-sub">este mês</span></div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:var(--emerald-50)">
+            <svg width="19" height="19" fill="none" stroke="var(--emerald-600)" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6"/></svg>
+          </div>
+          <div>
+            <div class="kpi-label">Pagamentos recebidos</div>
+            <div class="kpi-value">R$ 48.320</div>
+            <div class="kpi-meta"><span class="badge bg-up">↑ +22,5%</span><span class="kpi-sub">vs mês anterior</span></div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:var(--amber-50)">
+            <svg width="19" height="19" fill="none" stroke="var(--amber-600)" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div>
+            <div class="kpi-label">Pendentes</div>
+            <div class="kpi-value">342</div>
+            <div class="kpi-meta"><span class="badge bg-nt">= estável</span><span class="kpi-sub">aguardando pagamento</span></div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:var(--red-50)">
+            <svg width="19" height="19" fill="none" stroke="var(--red-500)" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div>
+            <div class="kpi-label">Inadimplentes</div>
+            <div class="kpi-value">89</div>
+            <div class="kpi-meta"><span class="badge bg-dn">↑ +8,4%</span><span class="kpi-sub">requer atenção</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mid: Chart + Flow -->
+      <div class="mid-grid">
+
+        <!-- Chart -->
+        <div class="card">
+          <div class="chdr">
+            <div><div class="chdr-title">Desempenho da régua de cobrança</div><div class="chdr-sub">Eficiência das automações por período</div></div>
+            <div class="ftabs">
+              <button class="ftab" onclick="setFtab(this)">Diário</button>
+              <button class="ftab" onclick="setFtab(this)">Semanal</button>
+              <button class="ftab active" onclick="setFtab(this)">Mensal</button>
+            </div>
+          </div>
+          <div class="chart-sum">
+            <div class="cs-item"><p>Mensagens enviadas</p><p>1.847</p></div>
+            <div class="cs-item"><p>Respostas recebidas</p><p>634</p></div>
+            <div class="cs-item"><p>Pagamentos</p><p>412</p></div>
+            <div class="legend">
+              <div class="leg-item"><div class="leg-dot" style="background:var(--blue-500)"></div>Enviadas</div>
+              <div class="leg-item"><div class="leg-dot" style="background:var(--emerald-500)"></div>Pagas</div>
+              <div class="leg-item"><div class="leg-dot" style="background:#e2e8f0;border:1px solid #cbd5e1"></div>Pendentes</div>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <div class="y-axis"><span>100%</span><span>75%</span><span>50%</span><span>25%</span><span>0%</span></div>
+            <div class="chart-inner">
+              <div class="gridlines"><div class="gl"></div><div class="gl"></div><div class="gl"></div><div class="gl"></div></div>
+              <div class="bars-row">
+                <div class="bar-group">
+                  <div class="bar-group-inner">
+                    <div class="bar" data-h="52" style="background:var(--blue-500);height:0"></div>
+                    <div class="bar" data-h="38" style="background:var(--emerald-500);height:0"></div>
+                    <div class="bar" data-h="18" style="background:#e2e8f0;height:0"></div>
+                  </div>
+                  <span class="bar-lbl">JAN</span>
+                </div>
+                <div class="bar-group">
+                  <div class="bar-group-inner">
+                    <div class="bar" data-h="61" style="background:var(--blue-500);height:0"></div>
+                    <div class="bar" data-h="44" style="background:var(--emerald-500);height:0"></div>
+                    <div class="bar" data-h="21" style="background:#e2e8f0;height:0"></div>
+                  </div>
+                  <span class="bar-lbl">FEV</span>
+                </div>
+                <div class="bar-group">
+                  <div class="bar-group-inner">
+                    <div class="bar" data-h="48" style="background:var(--blue-500);height:0"></div>
+                    <div class="bar" data-h="35" style="background:var(--emerald-500);height:0"></div>
+                    <div class="bar" data-h="16" style="background:#e2e8f0;height:0"></div>
+                  </div>
+                  <span class="bar-lbl">MAR</span>
+                </div>
+                <div class="bar-group">
+                  <span class="hi-badge">+17,8% conversão</span>
+                  <div class="bar-group-inner">
+                    <div class="bar" data-h="84" style="background:var(--blue-500);height:0"></div>
+                    <div class="bar" data-h="68" style="background:var(--emerald-500);height:0"></div>
+                    <div class="bar" data-h="30" style="background:#e2e8f0;height:0"></div>
+                  </div>
+                  <span class="bar-lbl" style="color:var(--emerald-600);font-weight:700">ABR</span>
+                </div>
+                <div class="bar-group">
+                  <div class="bar-group-inner">
+                    <div class="bar" data-h="72" style="background:var(--blue-500);height:0"></div>
+                    <div class="bar" data-h="55" style="background:var(--emerald-500);height:0"></div>
+                    <div class="bar" data-h="24" style="background:#e2e8f0;height:0"></div>
+                  </div>
+                  <span class="bar-lbl">MAI</span>
+                </div>
+                <div class="bar-group">
+                  <div class="bar-group-inner">
+                    <div class="bar" data-h="65" style="background:var(--blue-500);height:0"></div>
+                    <div class="bar" data-h="50" style="background:var(--emerald-500);height:0"></div>
+                    <div class="bar" data-h="22" style="background:#e2e8f0;height:0"></div>
+                  </div>
+                  <span class="bar-lbl">JUN</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Automation flow -->
+        <div class="card">
+          <div class="chdr">
+            <div><div class="chdr-title">Fluxo da automação</div><div class="chdr-sub">Régua de cobrança ativa</div></div>
+            <span class="badge" style="background:var(--emerald-50);color:var(--emerald-600);font-size:10px;padding:3px 8px">● Ativo</span>
+          </div>
+          <div class="flow-steps">
+            <div class="flow-step">
+              <div class="flow-line"></div>
+              <div class="flow-dot" style="background:var(--blue-50);color:var(--blue-600)">D-5</div>
+              <div class="flow-body">
+                <div class="flow-name">5 dias antes do vencimento</div>
+                <div class="flow-desc">Lembrete amigável via WhatsApp</div>
+                <div class="flow-stat">634 enviados · 48% abertos</div>
+              </div>
+            </div>
+            <div class="flow-step">
+              <div class="flow-line"></div>
+              <div class="flow-dot" style="background:var(--emerald-50);color:var(--emerald-600)">D0</div>
+              <div class="flow-body">
+                <div class="flow-name">No dia do vencimento</div>
+                <div class="flow-desc">Pix e boleto disponibilizados</div>
+                <div class="flow-stat">412 enviados · 62% pagaram</div>
+              </div>
+            </div>
+            <div class="flow-step">
+              <div class="flow-line"></div>
+              <div class="flow-dot" style="background:var(--amber-50);color:var(--amber-600)">D+3</div>
+              <div class="flow-body">
+                <div class="flow-name">3 dias em atraso</div>
+                <div class="flow-desc">Cobrança reforçada com link</div>
+                <div class="flow-stat">189 enviados · 31% responderam</div>
+              </div>
+            </div>
+            <div class="flow-step">
+              <div class="flow-line"></div>
+              <div class="flow-dot" style="background:var(--red-50);color:var(--red-500)">D+7</div>
+              <div class="flow-body">
+                <div class="flow-name">7 dias em atraso</div>
+                <div class="flow-desc">Aviso de pendência financeira</div>
+                <div class="flow-stat">98 enviados · 18% regularizaram</div>
+              </div>
+            </div>
+            <div class="flow-step">
+              <div class="flow-dot" style="background:var(--violet-50);color:var(--violet-600)">FIN</div>
+              <div class="flow-body">
+                <div class="flow-name">Encaminhar ao financeiro</div>
+                <div class="flow-desc">Após 15 dias sem resposta</div>
+                <div class="flow-stat">23 casos · em análise</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom 3-col: Status + Canais + Mensagens -->
+      <div class="bot3">
+
+        <!-- Status -->
+        <div class="card">
+          <div class="chdr" style="margin-bottom:12px">
+            <div><div class="chdr-title">Status das cobranças</div><div class="chdr-sub">Distribuição atual</div></div>
+          </div>
+          <div class="pbar-row">
+            <div class="pbar-hdr"><span>Pagas</span><span>538</span></div>
+            <div class="pbar-track"><div class="pbar-fill" data-w="43" style="background:var(--emerald-500);width:0"></div></div>
+            <div style="font-size:10px;color:var(--zinc-400);text-align:right;margin-top:2px">43%</div>
+          </div>
+          <div class="pbar-row">
+            <div class="pbar-hdr"><span>Pendentes</span><span>367</span></div>
+            <div class="pbar-track"><div class="pbar-fill" data-w="29" style="background:var(--amber-500);width:0"></div></div>
+            <div style="font-size:10px;color:var(--zinc-400);text-align:right;margin-top:2px">29%</div>
+          </div>
+          <div class="pbar-row">
+            <div class="pbar-hdr"><span>Aguardando resposta</span><span>200</span></div>
+            <div class="pbar-track"><div class="pbar-fill" data-w="16" style="background:var(--blue-500);width:0"></div></div>
+            <div style="font-size:10px;color:var(--zinc-400);text-align:right;margin-top:2px">16%</div>
+          </div>
+          <div class="pbar-row">
+            <div class="pbar-hdr"><span>Vencidas</span><span>142</span></div>
+            <div class="pbar-track"><div class="pbar-fill" data-w="11" style="background:var(--red-500);width:0"></div></div>
+            <div style="font-size:10px;color:var(--zinc-400);text-align:right;margin-top:2px">11%</div>
+          </div>
+          <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--zinc-100);display:flex;justify-content:space-between">
+            <span style="font-size:11px;color:var(--zinc-500)">Total de cobranças</span>
+            <span style="font-size:14px;font-weight:700;color:var(--zinc-800)">1.247</span>
+          </div>
+        </div>
+
+        <!-- Canais -->
+        <div class="card">
+          <div class="chdr" style="margin-bottom:4px">
+            <div><div class="chdr-title">Canais de envio</div><div class="chdr-sub">Distribuição este mês</div></div>
+          </div>
+          <div class="ch-item">
+            <div class="ch-icon" style="background:#dcfce7"><svg width="15" height="15" fill="none" stroke="#16a34a" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+            <div class="ch-info"><div class="ch-name">WhatsApp</div><div class="ch-meta">Mensagens automáticas</div></div>
+            <div><div class="ch-count">968</div><div class="ch-pct">52%</div></div>
+          </div>
+          <div class="ch-item">
+            <div class="ch-icon" style="background:var(--blue-50)"><svg width="15" height="15" fill="none" stroke="var(--blue-600)" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M7 15h2m4 0h2"/></svg></div>
+            <div class="ch-info"><div class="ch-name">Pix gerado</div><div class="ch-meta">Chave e QR code</div></div>
+            <div><div class="ch-count">448</div><div class="ch-pct">24%</div></div>
+          </div>
+          <div class="ch-item">
+            <div class="ch-icon" style="background:var(--violet-50)"><svg width="15" height="15" fill="none" stroke="var(--violet-600)" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></div>
+            <div class="ch-info"><div class="ch-name">Boleto emitido</div><div class="ch-meta">PDF + código de barras</div></div>
+            <div><div class="ch-count">280</div><div class="ch-pct">15%</div></div>
+          </div>
+          <div class="ch-item">
+            <div class="ch-icon" style="background:var(--amber-50)"><svg width="15" height="15" fill="none" stroke="var(--amber-600)" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 014 12.84 19.79 19.79 0 01.93 4.17A2 2 0 012.91 2h3a2 2 0 012 1.72"/></svg></div>
+            <div class="ch-info"><div class="ch-name">SMS</div><div class="ch-meta">Alertas de vencimento</div></div>
+            <div><div class="ch-count">151</div><div class="ch-pct">9%</div></div>
+          </div>
+        </div>
+
+        <!-- Mensagens recentes -->
+        <div class="card">
+          <div class="chdr" style="margin-bottom:4px">
+            <div><div class="chdr-title">Mensagens recentes</div><div class="chdr-sub">Últimas interações</div></div>
+            <button style="font-size:11px;color:var(--blue-600);background:none;border:none;cursor:pointer;font-weight:600">Ver tudo</button>
+          </div>
+          <div class="msg-item">
+            <div class="msg-av" style="background:var(--blue-500)">JS</div>
+            <div class="msg-info"><div class="msg-name">João Silva</div><div class="msg-type">Lembrete de vencimento</div></div>
+            <div class="msg-right"><div class="msg-time">10:30</div><span class="sbadge s-bl">Enviado</span></div>
+          </div>
+          <div class="msg-item">
+            <div class="msg-av" style="background:var(--emerald-500)">MS</div>
+            <div class="msg-info"><div class="msg-name">Maria Souza</div><div class="msg-type">Cobrança em atraso</div></div>
+            <div class="msg-right"><div class="msg-time">11:15</div><span class="sbadge s-em">Respondido</span></div>
+          </div>
+          <div class="msg-item">
+            <div class="msg-av" style="background:var(--amber-500)">CL</div>
+            <div class="msg-info"><div class="msg-name">Carlos Lima</div><div class="msg-type">Pix enviado</div></div>
+            <div class="msg-right"><div class="msg-time">12:05</div><span class="sbadge s-am">Aguardando</span></div>
+          </div>
+          <div class="msg-item">
+            <div class="msg-av" style="background:var(--violet-600)">AP</div>
+            <div class="msg-info"><div class="msg-name">Ana Paula</div><div class="msg-type">Boleto emitido</div></div>
+            <div class="msg-right"><div class="msg-time">12:48</div><span class="sbadge s-em">Pago</span></div>
+          </div>
+          <div class="msg-item">
+            <div class="msg-av" style="background:var(--red-500)">RF</div>
+            <div class="msg-info"><div class="msg-name">Ricardo Faria</div><div class="msg-type">7 dias em atraso</div></div>
+            <div class="msg-right"><div class="msg-time">13:22</div><span class="sbadge s-rd">Vencido</span></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Table -->
+      <div class="card">
+        <div class="chdr">
+          <div><div class="chdr-title">Cobranças recentes</div><div class="chdr-sub">Acompanhamento das cobranças automatizadas</div></div>
+          <button style="padding:6px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;color:var(--zinc-600);background:white;cursor:pointer">Ver tudo</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th style="padding-left:14px">Vencimento</th>
+              <th style="padding-left:14px">Canal</th>
+              <th style="padding-left:14px">Status</th>
+              <th style="padding-left:14px">Etapa da régua</th>
+              <th class="tr">Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="cl-name">João Silva</div><div class="cl-doc">CPF 123.456.789-00</div></td>
+              <td class="px">16 Jun 2025</td>
+              <td class="px"><span class="etapa" style="background:var(--blue-50);color:var(--blue-600)">WhatsApp</span></td>
+              <td class="px"><span class="sbadge s-em" style="margin-top:0">● Pago</span></td>
+              <td class="px"><span class="etapa">Pós-vencimento D+1</span></td>
+              <td style="text-align:right;font-weight:700;color:var(--emerald-600)">R$ 189,90</td>
+            </tr>
+            <tr>
+              <td><div class="cl-name">Maria Souza</div><div class="cl-doc">CPF 987.654.321-00</div></td>
+              <td class="px">15 Jun 2025</td>
+              <td class="px"><span class="etapa" style="background:var(--blue-50);color:var(--blue-600)">WhatsApp + Pix</span></td>
+              <td class="px"><span class="sbadge s-am" style="margin-top:0">● Pendente</span></td>
+              <td class="px"><span class="etapa">No vencimento</span></td>
+              <td style="text-align:right;font-weight:700;color:var(--zinc-800)">R$ 249,90</td>
+            </tr>
+            <tr>
+              <td><div class="cl-name">Carlos Lima</div><div class="cl-doc">CNPJ 12.345.678/0001-90</div></td>
+              <td class="px">14 Jun 2025</td>
+              <td class="px"><span class="etapa" style="background:var(--violet-50);color:var(--violet-600)">Boleto</span></td>
+              <td class="px"><span class="sbadge s-rd" style="margin-top:0">● Vencido</span></td>
+              <td class="px"><span class="etapa" style="background:var(--red-50);color:var(--red-500)">7 dias em atraso</span></td>
+              <td style="text-align:right;font-weight:700;color:var(--red-500)">R$ 329,90</td>
+            </tr>
+            <tr>
+              <td><div class="cl-name">Ana Paula</div><div class="cl-doc">CPF 456.123.789-00</div></td>
+              <td class="px">13 Jun 2025</td>
+              <td class="px"><span class="etapa" style="background:var(--blue-50);color:var(--blue-600)">WhatsApp</span></td>
+              <td class="px"><span class="sbadge s-bl" style="margin-top:0">● Respondido</span></td>
+              <td class="px"><span class="etapa">D-3 pré-vencimento</span></td>
+              <td style="text-align:right;font-weight:700;color:var(--zinc-800)">R$ 159,90</td>
+            </tr>
+            <tr>
+              <td><div class="cl-name">Fernanda Costa</div><div class="cl-doc">CNPJ 98.765.432/0001-10</div></td>
+              <td class="px">12 Jun 2025</td>
+              <td class="px"><span class="etapa" style="background:var(--blue-50);color:var(--blue-600)">WhatsApp + Boleto</span></td>
+              <td class="px"><span class="sbadge s-em" style="margin-top:0">● Pago</span></td>
+              <td class="px"><span class="etapa">No vencimento</span></td>
+              <td style="text-align:right;font-weight:700;color:var(--emerald-600)">R$ 549,90</td>
+            </tr>
+            <tr>
+              <td><div class="cl-name">Ricardo Faria</div><div class="cl-doc">CPF 789.012.345-00</div></td>
+              <td class="px">11 Jun 2025</td>
+              <td class="px"><span class="etapa" style="background:var(--amber-50);color:var(--amber-600)">SMS</span></td>
+              <td class="px"><span class="sbadge s-rd" style="margin-top:0">● Vencido</span></td>
+              <td class="px"><span class="etapa" style="background:var(--violet-50);color:var(--violet-600)">Enc. financeiro</span></td>
+              <td style="text-align:right;font-weight:700;color:var(--red-500)">R$ 899,90</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Conversion + Activity -->
+      <div class="bot2">
+
+        <!-- Conversão -->
+        <div class="card">
+          <div class="chdr"><div><div class="chdr-title">Conversão por automação</div><div class="chdr-sub">Taxa de pagamento por etapa da régua</div></div></div>
+          <div class="conv-item">
+            <div class="conv-hdr"><span class="conv-name">Pré-vencimento (D-5)</span><span class="conv-pct">48%</span></div>
+            <div class="conv-sub">634 enviados · 304 pagamentos</div>
+            <div class="pbar-track"><div class="pbar-fill" data-w="48" style="background:var(--blue-500);width:0"></div></div>
+          </div>
+          <div class="conv-item">
+            <div class="conv-hdr"><span class="conv-name">No vencimento (D0)</span><span class="conv-pct">62%</span></div>
+            <div class="conv-sub">412 enviados · 255 pagamentos</div>
+            <div class="pbar-track"><div class="pbar-fill" data-w="62" style="background:var(--emerald-500);width:0"></div></div>
+          </div>
+          <div class="conv-item">
+            <div class="conv-hdr"><span class="conv-name">Pós-vencimento (D+3)</span><span class="conv-pct">31%</span></div>
+            <div class="conv-sub">189 enviados · 59 pagamentos</div>
+            <div class="pbar-track"><div class="pbar-fill" data-w="31" style="background:var(--amber-500);width:0"></div></div>
+          </div>
+          <div class="conv-item">
+            <div class="conv-hdr"><span class="conv-name">Inadimplente (D+7)</span><span class="conv-pct">18%</span></div>
+            <div class="conv-sub">98 enviados · 18 pagamentos</div>
+            <div class="pbar-track"><div class="pbar-fill" data-w="18" style="background:var(--red-500);width:0"></div></div>
+          </div>
+          <div class="conv-item">
+            <div class="conv-hdr"><span class="conv-name">Encaminhar financeiro</span><span class="conv-pct">9%</span></div>
+            <div class="conv-sub">23 casos · 2 regularizados</div>
+            <div class="pbar-track"><div class="pbar-fill" data-w="9" style="background:var(--violet-600);width:0"></div></div>
+          </div>
+        </div>
+
+        <!-- Atividades -->
+        <div class="card">
+          <div class="chdr"><div><div class="chdr-title">Atividades recentes</div><div class="chdr-sub">Eventos do sistema hoje</div></div></div>
+          <div class="act-item">
+            <div class="act-icon" style="background:var(--blue-50)"><svg width="14" height="14" fill="none" stroke="var(--blue-600)" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+            <div class="act-text"><p><strong>12 clientes</strong> responderam hoje</p><span>há 5 min · WhatsApp</span></div>
+          </div>
+          <div class="act-item">
+            <div class="act-icon" style="background:var(--emerald-50)"><svg width="14" height="14" fill="none" stroke="var(--emerald-600)" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="act-text"><p><strong>8 pagamentos</strong> confirmados</p><span>há 12 min · Pix e Boleto</span></div>
+          </div>
+          <div class="act-item">
+            <div class="act-icon" style="background:var(--violet-50)"><svg width="14" height="14" fill="none" stroke="var(--violet-600)" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg></div>
+            <div class="act-text"><p><strong>3 cobranças</strong> encaminhadas ao financeiro</p><span>há 34 min · Automação D+15</span></div>
+          </div>
+          <div class="act-item">
+            <div class="act-icon" style="background:var(--red-50)"><svg width="14" height="14" fill="none" stroke="var(--red-500)" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01"/></svg></div>
+            <div class="act-text"><p><strong>2 falhas de envio</strong> detectadas</p><span>há 1h · Número inválido</span></div>
+          </div>
+          <div class="act-item">
+            <div class="act-icon" style="background:var(--amber-50)"><svg width="14" height="14" fill="none" stroke="var(--amber-600)" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+            <div class="act-text"><p><strong>58 cobranças</strong> agendadas para amanhã</p><span>há 2h · Automação programada</span></div>
+          </div>
+          <div class="act-item">
+            <div class="act-icon" style="background:var(--emerald-50)"><svg width="14" height="14" fill="none" stroke="var(--emerald-600)" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6"/></svg></div>
+            <div class="act-text"><p><strong>R$ 4.830,00</strong> recuperados esta semana</p><span>há 3h · Resumo semanal</span></div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+setTimeout(() => {
+  document.querySelectorAll('.bar[data-h]').forEach(b => { b.style.height = b.dataset.h + '%' });
+  document.querySelectorAll('.pbar-fill[data-w]').forEach(b => { b.style.width = b.dataset.w + '%' });
+}, 120);
+
+document.querySelectorAll('.ftab').forEach(t => {
+  t.addEventListener('click', function() {
+    this.closest('.ftabs').querySelectorAll('.ftab').forEach(x => x.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+document.querySelectorAll('.sb-btn').forEach(b => {
+  b.addEventListener('click', function() {
+    document.querySelectorAll('.sb-btn').forEach(x => x.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+document.querySelectorAll('.nav-btn').forEach(b => {
+  b.addEventListener('click', function() {
+    document.querySelectorAll('.nav-btn').forEach(x => x.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
