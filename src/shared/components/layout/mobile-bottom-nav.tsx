@@ -7,6 +7,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
+import { useAuthContext } from "@/app/providers/use-auth";
 
 const PRIMARY_ITEMS = [
   { label: "Dashboard", href: "/painel/dashboard", icon: LayoutDashboard },
@@ -17,6 +18,7 @@ const PRIMARY_ITEMS = [
 
 export function MobileBottomNav() {
   const location = useLocation();
+  const { logout } = useAuthContext();
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t border-zinc-200 bg-white flex items-center justify-around h-16 z-40">
@@ -40,7 +42,7 @@ export function MobileBottomNav() {
       })}
 
       <button
-        onClick={() => console.log("Logout")}
+        onClick={logout}
         className="flex flex-col items-center justify-center gap-1 flex-1 h-full text-[10px] font-medium text-zinc-600 hover:text-red-600 transition-colors"
       >
         <LogOut size={24} />

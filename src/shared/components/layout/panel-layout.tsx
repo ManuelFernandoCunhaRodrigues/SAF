@@ -8,7 +8,7 @@ export function PanelLayout() {
   const { isExpanded } = useSidebarContext();
 
   return (
-    <div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-950 transition-colors duration-200">
+    <div className="flex min-h-screen bg-zinc-50 dark:bg-[#09090B] transition-colors duration-200">
       <Sidebar />
 
       <main
