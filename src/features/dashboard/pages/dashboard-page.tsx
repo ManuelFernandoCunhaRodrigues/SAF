@@ -24,21 +24,21 @@ const COBRANCAS: {
 ];
 
 const STATUS_CFG: Record<StatusCobranca, { bg: string; text: string; dot: string }> = {
-  Pago:       { bg: "bg-emerald-50 dark:bg-emerald-500/10", text: "text-emerald-600 dark:text-emerald-400", dot: "bg-emerald-500" },
-  Pendente:   { bg: "bg-amber-50 dark:bg-amber-500/10",     text: "text-amber-600 dark:text-amber-400",     dot: "bg-amber-500" },
-  Vencido:    { bg: "bg-red-50 dark:bg-red-500/10",         text: "text-red-500 dark:text-red-400",         dot: "bg-red-500" },
-  Respondido: { bg: "bg-blue-50 dark:bg-blue-500/10",       text: "text-blue-600 dark:text-blue-400",       dot: "bg-blue-500" },
+  Pago:       { bg: "bg-[#EFF6FF] dark:bg-[#2563EB]/10", text: "text-[#1E3A8A] dark:text-[#60A5FA]",  dot: "bg-blue-600 dark:bg-[#60A5FA]" },
+  Pendente:   { bg: "bg-slate-50 dark:bg-[#64748B]/10",  text: "text-slate-600 dark:text-[#94A3B8]",  dot: "bg-slate-500 dark:bg-[#94A3B8]" },
+  Vencido:    { bg: "bg-zinc-100 dark:bg-[#52525B]/10",  text: "text-zinc-600 dark:text-[#94A3B8]",   dot: "bg-zinc-500 dark:bg-[#94A3B8]" },
+  Respondido: { bg: "bg-blue-50 dark:bg-[#2563EB]/10",   text: "text-blue-600 dark:text-[#60A5FA]",   dot: "bg-blue-500 dark:bg-[#60A5FA]" },
 };
 
 const CANAL_CFG: Record<string, string> = {
-  blue:   "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400",
-  violet: "bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400",
-  amber:  "bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400",
+  blue:   "bg-[#EFF6FF] dark:bg-blue-500/10 text-[#1E3A8A] dark:text-blue-400",
+  violet: "bg-slate-100 dark:bg-slate-700/20 text-slate-500 dark:text-slate-400",
+  amber:  "bg-[#EFF6FF] dark:bg-blue-900/15 text-blue-600 dark:text-blue-300",
 };
 
 const ETAPA_CFG: Record<string, string> = {
-  red:    "bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400",
-  violet: "bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400",
+  red:    "bg-zinc-100/70 dark:bg-zinc-900/10 text-zinc-500 dark:text-zinc-500/70",
+  violet: "bg-[#EFF6FF] dark:bg-blue-900/20 text-[#1E3A8A] dark:text-blue-300",
 };
 
 const BARS = [
@@ -51,7 +51,7 @@ const BARS = [
 ];
 
 /* ─── card base reutilizável ─── */
-const C = "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm";
+const C = "bg-white dark:bg-[#18181B] border border-zinc-100 dark:border-[#27272A] rounded-2xl p-6";
 
 /* ─── export helpers ─── */
 function triggerDownload(content: string, filename: string, mime: string) {
