@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuthContext } from "@/app/providers/use-auth";
+import { useDashboardStats } from "../hooks/use-dashboard";
 import {
-  Calendar, Plus, TrendingUp, TrendingDown,
+  Calendar, Plus,
   MessageSquare, Zap,
   AlertTriangle, DollarSign, Clock, CheckCircle,
   FileText, ArrowRight, Download, FileSpreadsheet, FileDown,
@@ -140,6 +141,18 @@ export function DashboardPage() {
   const { user } = useAuthContext();
   const [animated, setAnimated] = useState(false);
   const [filter, setFilter] = useState<"Diário" | "Semanal" | "Mensal">("Mensal");
+  const { data: stats, isLoading: statsLoading, isError: statsError } = useDashboardStats();
+
+  const fmt = (n: number) => n.toLocaleString("pt-BR");
+  const fmtBRL = (n: number) =>
+    n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+  const kpis = [
+    { label: "Cobranças enviadas",   value: statsLoading ? "—" : fmt(stats?.totalInvoices ?? 0),  change: "", up: true  as true | false | null, sub: "total cadastradas",  Icon: Zap,           iBg: "bg-blue-50 dark:bg-blue-500/10",         iC: "text-blue-600 dark:text-blue-400" },
+    { label: "Pagamentos recebidos", value: statsLoading ? "—" : fmtBRL(stats?.totalReceived ?? 0), change: "", up: true  as true | false | null, sub: "valor total pago",   Icon: DollarSign,    iBg: "bg-emerald-50 dark:bg-emerald-500/10",    iC: "text-emerald-600 dark:text-emerald-400" },
+    { label: "Pendentes",            value: statsLoading ? "—" : fmt(stats?.pending ?? 0),          change: "", up: null  as true | false | null, sub: "aguardando pag.",   Icon: Clock,         iBg: "bg-amber-50 dark:bg-amber-500/10",        iC: "text-amber-600 dark:text-amber-400" },
+    { label: "Inadimplentes",        value: statsLoading ? "—" : fmt(stats?.overdue ?? 0),          change: "", up: false as true | false | null, sub: "requer atenção",    Icon: AlertTriangle, iBg: "bg-red-50 dark:bg-red-500/10",            iC: "text-red-500 dark:text-red-400" },
+  ];
 
   useEffect(() => {
     const t = setTimeout(() => setAnimated(true), 100);
@@ -173,13 +186,13 @@ export function DashboardPage() {
       </div>
 
       {/* ── KPIs ── */}
+      {statsError && (
+        <div className="rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400">
+          Não foi possível carregar os indicadores. Verifique a conexão com a API.
+        </div>
+      )}
       <div className="grid grid-cols-4 gap-4">
-        {([
-          { label: "Cobranças enviadas",    value: "1.847",     change: "+14,2%", up: true,  sub: "este mês",        Icon: Zap,           iBg: "bg-blue-50 dark:bg-blue-500/10",    iC: "text-blue-600 dark:text-blue-400" },
-          { label: "Pagamentos recebidos",  value: "R$ 48.320", change: "+22,5%", up: true,  sub: "vs mês anterior", Icon: DollarSign,    iBg: "bg-emerald-50 dark:bg-emerald-500/10", iC: "text-emerald-600 dark:text-emerald-400" },
-          { label: "Pendentes",             value: "342",       change: "estável",up: null,  sub: "aguardando pag.", Icon: Clock,         iBg: "bg-amber-50 dark:bg-amber-500/10",  iC: "text-amber-600 dark:text-amber-400" },
-          { label: "Inadimplentes",         value: "89",        change: "+8,4%",  up: false, sub: "requer atenção",  Icon: AlertTriangle, iBg: "bg-red-50 dark:bg-red-500/10",      iC: "text-red-500 dark:text-red-400" },
-        ] as const).map((k) => {
+        {kpis.map((k) => {
           const Icon = k.Icon;
           return (
             <div key={k.label} className={`${C} flex items-center gap-3`}>
@@ -188,17 +201,10 @@ export function DashboardPage() {
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider truncate">{k.label}</p>
-                <p className="text-[21px] font-bold text-zinc-800 dark:text-zinc-100 mt-0.5 leading-none tracking-tight">{k.value}</p>
-                <div className="flex items-center gap-1.5 mt-1.5">
-                  {k.up === null ? (
-                    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">= {k.change}</span>
-                  ) : (
-                    <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${k.up ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400"}`}>
-                      {k.up ? <TrendingUp size={9} /> : <TrendingDown size={9} />} {k.change}
-                    </span>
-                  )}
-                  <span className="text-[10px] text-zinc-400 dark:text-zinc-500">{k.sub}</span>
-                </div>
+                <p className={`text-[21px] font-bold text-zinc-800 dark:text-zinc-100 mt-0.5 leading-none tracking-tight ${statsLoading ? "animate-pulse text-zinc-300 dark:text-zinc-700" : ""}`}>
+                  {k.value}
+                </p>
+                <span className="text-[10px] text-zinc-400 dark:text-zinc-500">{k.sub}</span>
               </div>
             </div>
           );
