@@ -1,37 +1,54 @@
 import { useState } from "react";
-import { Plus, Search, Users, ShieldCheck, UserIcon, SlidersHorizontal } from "lucide-react";
+import { Plus, Search, Users, ShieldCheck, UserIcon, SlidersHorizontal, Loader2 } from "lucide-react";
 import { UserCard } from "../components/user-card";
+import { useUsers } from "../hooks/use-users";
 
 type Role = "Admin" | "User";
 
-const ALL_USERS: {
-  id: string;
-  name: string;
-  email: string;
-  role: Role;
-  initials: string;
-  avatarColor: string;
-}[] = [
-  { id: "1", name: "João Silva",      email: "joao@example.com",   role: "Admin", initials: "JS", avatarColor: "bg-blue-500" },
-  { id: "2", name: "Maria Santos",    email: "maria@example.com",  role: "User",  initials: "MS", avatarColor: "bg-violet-500" },
-  { id: "3", name: "Pedro Oliveira",  email: "pedro@example.com",  role: "User",  initials: "PO", avatarColor: "bg-emerald-500" },
+const AVATAR_COLORS = [
+  "bg-blue-500",
+  "bg-violet-500",
+  "bg-emerald-500",
+  "bg-amber-500",
+  "bg-rose-500",
+  "bg-cyan-500",
 ];
 
-const STATS = [
-  { label: "Total de usuários", value: "3",  Icon: Users,       iBg: "bg-blue-50 dark:bg-blue-500/10",    iC: "text-blue-600 dark:text-blue-400" },
-  { label: "Administradores",   value: "1",  Icon: ShieldCheck, iBg: "bg-violet-50 dark:bg-violet-500/10",iC: "text-violet-600 dark:text-violet-400" },
-  { label: "Usuários comuns",   value: "2",  Icon: UserIcon,    iBg: "bg-emerald-50 dark:bg-emerald-500/10",iC: "text-emerald-600 dark:text-emerald-400" },
-];
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase();
+}
+
+function getAvatarColor(name: string): string {
+  let hash = 0;
+  for (const c of name) hash = c.charCodeAt(0) + ((hash << 5) - hash);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
 
 export function UsersPage() {
+  const { data: users = [], isLoading, isError } = useUsers();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<"Todos" | Role>("Todos");
 
-  const filtered = ALL_USERS.filter((u) => {
+  const admins = users.filter((u) => u.role === "admin").length;
+  const regular = users.filter((u) => u.role === "user").length;
+
+  const STATS = [
+    { label: "Total de usuários", value: String(users.length), Icon: Users,       iBg: "bg-blue-50 dark:bg-blue-500/10",       iC: "text-blue-600 dark:text-blue-400" },
+    { label: "Administradores",   value: String(admins),        Icon: ShieldCheck, iBg: "bg-violet-50 dark:bg-violet-500/10",   iC: "text-violet-600 dark:text-violet-400" },
+    { label: "Usuários comuns",   value: String(regular),       Icon: UserIcon,    iBg: "bg-emerald-50 dark:bg-emerald-500/10", iC: "text-emerald-600 dark:text-emerald-400" },
+  ];
+
+  const filtered = users.filter((u) => {
     const matchSearch =
       u.name.toLowerCase().includes(search.toLowerCase()) ||
       u.email.toLowerCase().includes(search.toLowerCase());
-    const matchRole = roleFilter === "Todos" || u.role === roleFilter;
+    const roleLabel: Role = u.role === "admin" ? "Admin" : "User";
+    const matchRole = roleFilter === "Todos" || roleLabel === roleFilter;
     return matchSearch && matchRole;
   });
 
@@ -77,7 +94,6 @@ export function UsersPage() {
 
       {/* ── Filtros ── */}
       <div className="flex items-center gap-3">
-        {/* Search */}
         <div className="flex items-center gap-2.5 flex-1 max-w-xs bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2.5 shadow-sm">
           <Search size={14} className="text-zinc-400 dark:text-zinc-500 flex-shrink-0" />
           <input
@@ -89,7 +105,6 @@ export function UsersPage() {
           />
         </div>
 
-        {/* Role filter */}
         <div className="flex items-center gap-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-1 shadow-sm">
           <SlidersHorizontal size={13} className="text-zinc-400 dark:text-zinc-500 ml-2 mr-1" />
           {(["Todos", "Admin", "User"] as const).map((f) => (
@@ -110,9 +125,26 @@ export function UsersPage() {
 
       {/* ── Lista de usuários ── */}
       <div className="flex flex-col gap-5">
-        {filtered.length > 0 ? (
+        {isLoading ? (
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-12 shadow-sm flex flex-col items-center gap-3">
+            <Loader2 size={24} className="text-blue-600 animate-spin" />
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">Carregando usuários...</p>
+          </div>
+        ) : isError ? (
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-12 shadow-sm flex flex-col items-center gap-3">
+            <p className="text-sm font-semibold text-red-500">Erro ao carregar usuários</p>
+            <p className="text-xs text-zinc-400 dark:text-zinc-500">Tente novamente mais tarde</p>
+          </div>
+        ) : filtered.length > 0 ? (
           filtered.map((user) => (
-            <UserCard key={user.id} {...user} />
+            <UserCard
+              key={user.id}
+              name={user.name}
+              email={user.email}
+              role={user.role === "admin" ? "Admin" : "User"}
+              initials={getInitials(user.name)}
+              avatarColor={getAvatarColor(user.name)}
+            />
           ))
         ) : (
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-12 shadow-sm flex flex-col items-center gap-3">
@@ -125,10 +157,9 @@ export function UsersPage() {
         )}
       </div>
 
-      {/* ── Footer count ── */}
-      {filtered.length > 0 && (
+      {!isLoading && !isError && filtered.length > 0 && (
         <p className="text-xs text-zinc-400 dark:text-zinc-600">
-          Exibindo {filtered.length} de {ALL_USERS.length} usuário{ALL_USERS.length !== 1 ? "s" : ""}
+          Exibindo {filtered.length} de {users.length} usuário{users.length !== 1 ? "s" : ""}
         </p>
       )}
 
