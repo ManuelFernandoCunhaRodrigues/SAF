@@ -2,7 +2,7 @@ import { api } from "@/shared/services/api";
 import type { AuthResponse, LoginCredentials } from "../types/auth";
 
 export async function loginService(credentials: LoginCredentials): Promise<AuthResponse> {
-  const response = await api.post<AuthResponse>("/users/sessions", credentials);
+  const response = await api.post<AuthResponse>("/users/login", credentials);
   return response.data;
 }
 
