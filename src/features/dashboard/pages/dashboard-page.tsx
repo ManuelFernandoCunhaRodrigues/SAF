@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuthContext } from "@/app/providers/use-auth";
 import { useDashboardStats } from "../hooks/use-dashboard";
+import { PerformanceChart } from "../components/performance-chart";
 import {
   Calendar, Plus,
   MessageSquare, Zap,
@@ -42,14 +43,6 @@ const ETAPA_CFG: Record<string, string> = {
   violet: "bg-[#EFF6FF] dark:bg-blue-900/20 text-[#1E3A8A] dark:text-blue-300",
 };
 
-const BARS = [
-  { label: "JAN", env: 52, pago: 38, pend: 18 },
-  { label: "FEV", env: 61, pago: 44, pend: 21 },
-  { label: "MAR", env: 48, pago: 35, pend: 16 },
-  { label: "ABR", env: 84, pago: 68, pend: 30, hi: true },
-  { label: "MAI", env: 72, pago: 55, pend: 24 },
-  { label: "JUN", env: 65, pago: 50, pend: 22 },
-];
 
 /* ─── card base reutilizável ─── */
 const C = "bg-white dark:bg-[#18181B] border border-zinc-100 dark:border-[#27272A] rounded-2xl p-6";
@@ -99,9 +92,9 @@ function ExportMenu() {
   }, []);
 
   const options = [
-    { label: "Exportar CSV",  Icon: FileText,  action: exportCSV,  cls: "text-blue-600 dark:text-blue-400",    iBg: "bg-blue-50 dark:bg-blue-500/10" },
-    { label: "Exportar XLS",  Icon: FileSpreadsheet, action: exportXLS, cls: "text-emerald-600 dark:text-emerald-400", iBg: "bg-emerald-50 dark:bg-emerald-500/10" },
-    { label: "Exportar PDF",  Icon: FileDown,  action: exportPDF,  cls: "text-red-500 dark:text-red-400",      iBg: "bg-red-50 dark:bg-red-500/10" },
+    { label: "Exportar CSV",  Icon: FileText,        action: exportCSV,  cls: "text-blue-500 dark:text-blue-400",      iBg: "bg-blue-50 dark:bg-blue-500/10" },
+    { label: "Exportar XLS",  Icon: FileSpreadsheet, action: exportXLS,  cls: "text-blue-400 dark:text-[#60A5FA]",     iBg: "bg-blue-50 dark:bg-[#60A5FA]/10" },
+    { label: "Exportar PDF",  Icon: FileDown,        action: exportPDF,  cls: "text-blue-300 dark:text-[#93C5FD]",     iBg: "bg-blue-50 dark:bg-[#93C5FD]/10" },
   ];
 
   return (
@@ -140,7 +133,6 @@ function ExportMenu() {
 export function DashboardPage() {
   const { user } = useAuthContext();
   const [animated, setAnimated] = useState(false);
-  const [filter, setFilter] = useState<"Diário" | "Semanal" | "Mensal">("Mensal");
   const { data: stats, isLoading: statsLoading, isError: statsError } = useDashboardStats();
 
   const fmt = (n: number) => n.toLocaleString("pt-BR");
@@ -148,10 +140,10 @@ export function DashboardPage() {
     n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
   const kpis = [
-    { label: "Cobranças enviadas",   value: statsLoading ? "—" : fmt(stats?.totalInvoices ?? 0),  change: "", up: true  as true | false | null, sub: "total cadastradas",  Icon: Zap,           iBg: "bg-blue-50 dark:bg-blue-500/10",         iC: "text-blue-600 dark:text-blue-400" },
-    { label: "Pagamentos recebidos", value: statsLoading ? "—" : fmtBRL(stats?.totalReceived ?? 0), change: "", up: true  as true | false | null, sub: "valor total pago",   Icon: DollarSign,    iBg: "bg-emerald-50 dark:bg-emerald-500/10",    iC: "text-emerald-600 dark:text-emerald-400" },
-    { label: "Pendentes",            value: statsLoading ? "—" : fmt(stats?.pending ?? 0),          change: "", up: null  as true | false | null, sub: "aguardando pag.",   Icon: Clock,         iBg: "bg-amber-50 dark:bg-amber-500/10",        iC: "text-amber-600 dark:text-amber-400" },
-    { label: "Inadimplentes",        value: statsLoading ? "—" : fmt(stats?.overdue ?? 0),          change: "", up: false as true | false | null, sub: "requer atenção",    Icon: AlertTriangle, iBg: "bg-red-50 dark:bg-red-500/10",            iC: "text-red-500 dark:text-red-400" },
+    { label: "Cobranças enviadas",   value: statsLoading ? "—" : fmt(stats?.totalInvoices ?? 0),    change: "", up: true  as true | false | null, sub: "total cadastradas", Icon: Zap,           iBg: "bg-blue-50 dark:bg-[#2563EB]/10",    iC: "text-blue-600 dark:text-[#3B82F6]" },
+    { label: "Pagamentos recebidos", value: statsLoading ? "—" : fmtBRL(stats?.totalReceived ?? 0), change: "", up: true  as true | false | null, sub: "valor total pago",  Icon: DollarSign,    iBg: "bg-blue-50 dark:bg-[#3B82F6]/10",    iC: "text-blue-500 dark:text-[#60A5FA]" },
+    { label: "Pendentes",            value: statsLoading ? "—" : fmt(stats?.pending ?? 0),          change: "", up: null  as true | false | null, sub: "aguardando pag.",   Icon: Clock,         iBg: "bg-blue-50 dark:bg-[#93C5FD]/10",    iC: "text-blue-300 dark:text-[#93C5FD]" },
+    { label: "Inadimplentes",        value: statsLoading ? "—" : fmt(stats?.overdue ?? 0),          change: "", up: false as true | false | null, sub: "requer atenção",    Icon: AlertTriangle, iBg: "bg-red-50 dark:bg-[#EF4444]/10",     iC: "text-red-500 dark:text-[#EF4444]" },
   ];
 
   useEffect(() => {
@@ -214,96 +206,7 @@ export function DashboardPage() {
       {/* ── Gráfico + Fluxo ── */}
       <div className="grid gap-4" style={{ gridTemplateColumns: "1fr 268px" }}>
 
-        {/* Gráfico de desempenho */}
-        <div className={`${C} flex flex-col`}>
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <p className="text-sm font-bold text-zinc-800 dark:text-zinc-100">Desempenho da régua de cobrança</p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Eficiência das automações por período</p>
-            </div>
-            <div className="flex gap-1.5">
-              {(["Diário", "Semanal", "Mensal"] as const).map((f) => (
-                <button
-                  key={f}
-                  onClick={() => setFilter(f)}
-                  className={`px-3 py-1 rounded-lg text-xs font-semibold border transition-colors ${
-                    filter === f
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-white dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700"
-                  }`}
-                >
-                  {f}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-5 mb-4">
-            {[
-              { label: "Mensagens enviadas",  value: "1.847" },
-              { label: "Respostas recebidas", value: "634" },
-              { label: "Pagamentos",          value: "412" },
-            ].map((s) => (
-              <div key={s.label}>
-                <p className="text-[10px] text-zinc-400 dark:text-zinc-500">{s.label}</p>
-                <p className="text-[15px] font-bold text-zinc-800 dark:text-zinc-100 mt-0.5">{s.value}</p>
-              </div>
-            ))}
-            <div className="ml-auto flex items-center gap-4">
-              {[
-                { cls: "bg-blue-500",    label: "Enviadas" },
-                { cls: "bg-emerald-500", label: "Pagas" },
-                { cls: "bg-zinc-300 dark:bg-zinc-600 border border-zinc-400 dark:border-zinc-500", label: "Pendentes" },
-              ].map((l) => (
-                <div key={l.label} className="flex items-center gap-1.5">
-                  <div className={`w-2 h-2 rounded-sm ${l.cls}`} />
-                  <span className="text-[10px] text-zinc-500 dark:text-zinc-400">{l.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex gap-2 flex-1">
-            <div className="flex flex-col justify-between text-right pb-5 flex-shrink-0">
-              {["100%", "75%", "50%", "25%", "0%"].map((l) => (
-                <span key={l} className="text-[10px] text-zinc-400 dark:text-zinc-600">{l}</span>
-              ))}
-            </div>
-            <div className="flex-1 flex flex-col">
-              <div className="flex-1 flex flex-col justify-between pointer-events-none">
-                {[0,1,2,3].map((i) => <div key={i} className="h-px bg-zinc-100 dark:bg-zinc-800 w-full" />)}
-              </div>
-              <div className="flex items-end gap-2 h-[150px] pt-2">
-                {BARS.map((bar) => (
-                  <div key={bar.label} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end relative">
-                    {bar.hi && (
-                      <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap z-10">
-                        +17,8% conversão
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-emerald-500" />
-                      </div>
-                    )}
-                    <div className="flex items-end gap-0.5 w-full justify-center h-full">
-                      {[
-                        { h: bar.env,  bg: "#3b82f6" },
-                        { h: bar.pago, bg: "#10b981" },
-                        { h: bar.pend, bg: "#d4d4d8" },
-                      ].map((b, i) => (
-                        <div
-                          key={i}
-                          className="flex-1 rounded-t-[3px] transition-all duration-700 max-w-[14px]"
-                          style={{ height: animated ? `${b.h}%` : "0%", background: b.bg }}
-                        />
-                      ))}
-                    </div>
-                    <span className={`text-[10px] font-semibold ${bar.hi ? "text-emerald-500" : "text-zinc-400 dark:text-zinc-600"}`}>
-                      {bar.label}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
+        <PerformanceChart />
 
         {/* Fluxo de automação */}
         <div className={C}>
@@ -312,15 +215,15 @@ export function DashboardPage() {
               <p className="text-sm font-bold text-zinc-800 dark:text-zinc-100">Fluxo da automação</p>
               <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Régua de cobrança ativa</p>
             </div>
-            <span className="text-[10px] font-bold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-1 rounded-full">● Ativo</span>
+            <span className="text-[10px] font-bold bg-blue-50 dark:bg-[#2563EB]/10 text-blue-600 dark:text-[#3B82F6] px-2 py-1 rounded-full">● Ativo</span>
           </div>
           <div className="flex flex-col">
             {[
-              { code: "D-5", name: "5 dias antes do vencimento", desc: "Lembrete amigável via WhatsApp", stat: "634 enviados · 48% abertos",    bg: "bg-blue-50 dark:bg-blue-500/10",    text: "text-blue-600 dark:text-blue-400" },
-              { code: "D0",  name: "No dia do vencimento",       desc: "Pix e boleto disponibilizados", stat: "412 enviados · 62% pagaram",      bg: "bg-emerald-50 dark:bg-emerald-500/10", text: "text-emerald-600 dark:text-emerald-400" },
-              { code: "D+3", name: "3 dias em atraso",           desc: "Cobrança reforçada com link",   stat: "189 enviados · 31% responderam",  bg: "bg-amber-50 dark:bg-amber-500/10",  text: "text-amber-600 dark:text-amber-400" },
-              { code: "D+7", name: "7 dias em atraso",           desc: "Aviso de pendência financeira", stat: "98 enviados · 18% regularizaram", bg: "bg-red-50 dark:bg-red-500/10",      text: "text-red-500 dark:text-red-400" },
-              { code: "FIN", name: "Encaminhar ao financeiro",   desc: "Após 15 dias sem resposta",     stat: "23 casos · em análise",           bg: "bg-violet-50 dark:bg-violet-500/10",text: "text-violet-600 dark:text-violet-400" },
+              { code: "D-5", name: "5 dias antes do vencimento", desc: "Lembrete amigável via WhatsApp", stat: "634 enviados · 48% abertos",    bg: "bg-blue-50 dark:bg-[#2563EB]/10",   text: "text-blue-600 dark:text-[#3B82F6]" },
+              { code: "D0",  name: "No dia do vencimento",       desc: "Pix e boleto disponibilizados", stat: "412 enviados · 62% pagaram",      bg: "bg-blue-50 dark:bg-[#3B82F6]/10",   text: "text-blue-500 dark:text-[#60A5FA]" },
+              { code: "D+3", name: "3 dias em atraso",           desc: "Cobrança reforçada com link",   stat: "189 enviados · 31% responderam",  bg: "bg-blue-50 dark:bg-[#93C5FD]/10",   text: "text-blue-300 dark:text-[#93C5FD]" },
+              { code: "D+7", name: "7 dias em atraso",           desc: "Aviso de pendência financeira", stat: "98 enviados · 18% regularizaram", bg: "bg-red-50 dark:bg-[#EF4444]/10",    text: "text-red-500 dark:text-[#EF4444]" },
+              { code: "FIN", name: "Encaminhar ao financeiro",   desc: "Após 15 dias sem resposta",     stat: "23 casos · em análise",           bg: "bg-blue-50 dark:bg-[#60A5FA]/10",   text: "text-blue-400 dark:text-[#60A5FA]" },
             ].map((step, i, arr) => (
               <div key={step.code} className="flex items-start gap-3 relative pb-4 last:pb-0">
                 {i < arr.length - 1 && (
@@ -332,7 +235,7 @@ export function DashboardPage() {
                 <div className="flex-1">
                   <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{step.name}</p>
                   <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5">{step.desc}</p>
-                  <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 mt-1">{step.stat}</p>
+                  <p className="text-[10px] font-bold text-blue-500 dark:text-[#60A5FA] mt-1">{step.stat}</p>
                 </div>
               </div>
             ))}
@@ -341,100 +244,6 @@ export function DashboardPage() {
 
       </div>
 
-      {/* ── Status + Canais + Mensagens ── */}
-      <div className="grid grid-cols-3 gap-4">
-
-        {/* Status */}
-        <div className={C}>
-          <p className="text-sm font-bold text-zinc-800 dark:text-zinc-100">Status das cobranças</p>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 mb-3">Distribuição atual</p>
-          {[
-            { label: "Pagas",            value: 538, pct: 43, color: "bg-emerald-500" },
-            { label: "Pendentes",        value: 367, pct: 29, color: "bg-amber-500" },
-            { label: "Aguardando resp.", value: 200, pct: 16, color: "bg-blue-500" },
-            { label: "Vencidas",         value: 142, pct: 11, color: "bg-red-500" },
-          ].map((item) => (
-            <div key={item.label} className="mt-3 first:mt-0">
-              <div className="flex justify-between mb-1">
-                <span className="text-xs text-zinc-700 dark:text-zinc-300">{item.label}</span>
-                <span className="text-xs font-bold text-zinc-800 dark:text-zinc-100">{item.value}</span>
-              </div>
-              <div className="h-[5px] bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full ${item.color} transition-all duration-700`}
-                  style={{ width: animated ? `${item.pct}%` : "0%" }}
-                />
-              </div>
-              <p className="text-[10px] text-zinc-400 dark:text-zinc-600 text-right mt-0.5">{item.pct}%</p>
-            </div>
-          ))}
-          <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex justify-between">
-            <span className="text-[11px] text-zinc-500 dark:text-zinc-400">Total de cobranças</span>
-            <span className="text-sm font-bold text-zinc-800 dark:text-zinc-100">1.247</span>
-          </div>
-        </div>
-
-        {/* Canais */}
-        <div className={C}>
-          <p className="text-sm font-bold text-zinc-800 dark:text-zinc-100">Canais de envio</p>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 mb-1">Distribuição este mês</p>
-          {[
-            { Icon: MessageSquare, name: "WhatsApp",      desc: "Mensagens automáticas", count: "968", pct: "52%", iBg: "bg-green-50 dark:bg-green-500/10",   iC: "text-green-600 dark:text-green-400" },
-            { Icon: DollarSign,    name: "Pix gerado",    desc: "Chave e QR code",       count: "448", pct: "24%", iBg: "bg-blue-50 dark:bg-blue-500/10",     iC: "text-blue-600 dark:text-blue-400" },
-            { Icon: FileText,      name: "Boleto emitido",desc: "PDF + código barras",   count: "280", pct: "15%", iBg: "bg-violet-50 dark:bg-violet-500/10", iC: "text-violet-600 dark:text-violet-400" },
-          ].map((ch) => {
-            const Icon = ch.Icon;
-            return (
-              <div key={ch.name} className="flex items-center gap-3 py-2.5 border-b border-zinc-100 dark:border-zinc-800 last:border-none first:pt-2">
-                <div className={`w-[34px] h-[34px] rounded-[10px] ${ch.iBg} flex items-center justify-center flex-shrink-0`}>
-                  <Icon size={14} className={ch.iC} />
-                </div>
-                <div className="flex-1">
-                  <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{ch.name}</p>
-                  <p className="text-[10px] text-zinc-400 dark:text-zinc-500">{ch.desc}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-zinc-800 dark:text-zinc-100">{ch.count}</p>
-                  <p className="text-[10px] text-zinc-400 dark:text-zinc-500">{ch.pct}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Mensagens recentes */}
-        <div className={C}>
-          <div className="flex items-center justify-between mb-1">
-            <p className="text-sm font-bold text-zinc-800 dark:text-zinc-100">Mensagens recentes</p>
-            <button className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold">Ver tudo</button>
-          </div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">Últimas interações</p>
-          {[
-            { initials: "JS", bg: "bg-blue-500",    name: "João Silva",    type: "Lembrete de vencimento", time: "10:30", badge: "Enviado",    bCfg: "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400" },
-            { initials: "MS", bg: "bg-emerald-500", name: "Maria Souza",   type: "Cobrança em atraso",     time: "11:15", badge: "Respondido", bCfg: "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
-            { initials: "CL", bg: "bg-amber-500",   name: "Carlos Lima",   type: "Pix enviado",            time: "12:05", badge: "Aguardando", bCfg: "bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400" },
-            { initials: "AP", bg: "bg-violet-600",  name: "Ana Paula",     type: "Boleto emitido",         time: "12:48", badge: "Pago",       bCfg: "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
-            { initials: "RF", bg: "bg-red-500",     name: "Ricardo Faria", type: "7 dias em atraso",       time: "13:22", badge: "Vencido",    bCfg: "bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400" },
-          ].map((m) => (
-            <div key={m.name} className="flex items-center gap-2.5 py-2 border-b border-zinc-100 dark:border-zinc-800 last:border-none last:pb-0 first:pt-0">
-              <div className={`w-[30px] h-[30px] rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0 ${m.bg}`}>
-                {m.initials}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate">{m.name}</p>
-                <p className="text-[10px] text-zinc-400 dark:text-zinc-500 truncate">{m.type}</p>
-              </div>
-              <div className="text-right flex-shrink-0">
-                <p className="text-[10px] text-zinc-400 dark:text-zinc-500">{m.time}</p>
-                <span className={`inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded-full mt-0.5 ${m.bCfg}`}>
-                  {m.badge}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-      </div>
 
       {/* ── Tabela ── */}
       <div className={C}>
@@ -466,8 +275,8 @@ export function DashboardPage() {
               const s = STATUS_CFG[c.status];
               const canalCls = c.canalCor ? CANAL_CFG[c.canalCor] : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400";
               const etapaCls = c.etapaCor ? ETAPA_CFG[c.etapaCor] : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400";
-              const valorCls = c.status === "Pago" ? "text-emerald-600 dark:text-emerald-400"
-                : c.status === "Vencido" ? "text-red-500 dark:text-red-400"
+              const valorCls = c.status === "Pago" ? "text-blue-500 dark:text-[#60A5FA]"
+                : c.status === "Vencido" ? "text-red-500 dark:text-[#EF4444]"
                 : "text-zinc-800 dark:text-zinc-100";
               return (
                 <tr key={i} className="border-b border-zinc-50 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors last:border-none">
@@ -504,11 +313,11 @@ export function DashboardPage() {
           <p className="text-sm font-bold text-zinc-800 dark:text-zinc-100">Conversão por automação</p>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 mb-4">Taxa de pagamento por etapa da régua</p>
           {[
-            { name: "Pré-vencimento (D-5)", pct: 48, sub: "634 enviados · 304 pagamentos", color: "bg-blue-500" },
-            { name: "No vencimento (D0)",   pct: 62, sub: "412 enviados · 255 pagamentos", color: "bg-emerald-500" },
-            { name: "Pós-vencimento (D+3)", pct: 31, sub: "189 enviados · 59 pagamentos",  color: "bg-amber-500" },
-            { name: "Inadimplente (D+7)",   pct: 18, sub: "98 enviados · 18 pagamentos",   color: "bg-red-500" },
-            { name: "Enc. financeiro",      pct: 9,  sub: "23 casos · 2 regularizados",    color: "bg-violet-600" },
+            { name: "Pré-vencimento (D-5)", pct: 48, sub: "634 enviados · 304 pagamentos", color: "bg-[#2563EB]" },
+            { name: "No vencimento (D0)",   pct: 62, sub: "412 enviados · 255 pagamentos", color: "bg-[#3B82F6]" },
+            { name: "Pós-vencimento (D+3)", pct: 31, sub: "189 enviados · 59 pagamentos",  color: "bg-[#60A5FA]" },
+            { name: "Inadimplente (D+7)",   pct: 18, sub: "98 enviados · 18 pagamentos",   color: "bg-[#EF4444]" },
+            { name: "Enc. financeiro",      pct: 9,  sub: "23 casos · 2 regularizados",    color: "bg-[#93C5FD]" },
           ].map((item) => (
             <div key={item.name} className="py-2.5 border-b border-zinc-100 dark:border-zinc-800 last:border-none last:pb-0 first:pt-0">
               <div className="flex justify-between mb-1">
@@ -531,12 +340,12 @@ export function DashboardPage() {
           <p className="text-sm font-bold text-zinc-800 dark:text-zinc-100">Atividades recentes</p>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 mb-4">Eventos do sistema hoje</p>
           {[
-            { Icon: MessageSquare, iBg: "bg-blue-50 dark:bg-blue-500/10",    iC: "text-blue-600 dark:text-blue-400",    text: <><strong className="text-zinc-800 dark:text-zinc-100">12 clientes</strong> responderam hoje</>,         meta: "há 5 min · WhatsApp" },
-            { Icon: CheckCircle,   iBg: "bg-emerald-50 dark:bg-emerald-500/10", iC: "text-emerald-600 dark:text-emerald-400", text: <><strong className="text-zinc-800 dark:text-zinc-100">8 pagamentos</strong> confirmados</>,              meta: "há 12 min · Pix e Boleto" },
-            { Icon: ArrowRight,    iBg: "bg-violet-50 dark:bg-violet-500/10", iC: "text-violet-600 dark:text-violet-400", text: <><strong className="text-zinc-800 dark:text-zinc-100">3 cobranças</strong> encaminhadas ao financeiro</>,  meta: "há 34 min · Automação D+15" },
-            { Icon: AlertTriangle, iBg: "bg-red-50 dark:bg-red-500/10",      iC: "text-red-500 dark:text-red-400",       text: <><strong className="text-zinc-800 dark:text-zinc-100">2 falhas de envio</strong> detectadas</>,              meta: "há 1h · Número inválido" },
-            { Icon: Clock,         iBg: "bg-amber-50 dark:bg-amber-500/10",  iC: "text-amber-600 dark:text-amber-400",  text: <><strong className="text-zinc-800 dark:text-zinc-100">58 cobranças</strong> agendadas para amanhã</>,         meta: "há 2h · Automação programada" },
-            { Icon: DollarSign,    iBg: "bg-emerald-50 dark:bg-emerald-500/10", iC: "text-emerald-600 dark:text-emerald-400", text: <><strong className="text-zinc-800 dark:text-zinc-100">R$ 4.830,00</strong> recuperados esta semana</>,  meta: "há 3h · Resumo semanal" },
+            { Icon: MessageSquare, iBg: "bg-blue-50 dark:bg-[#2563EB]/10",  iC: "text-blue-600 dark:text-[#3B82F6]",  text: <><strong className="text-zinc-800 dark:text-zinc-100">12 clientes</strong> responderam hoje</>,        meta: "há 5 min · WhatsApp" },
+            { Icon: CheckCircle,   iBg: "bg-blue-50 dark:bg-[#3B82F6]/10",  iC: "text-blue-500 dark:text-[#60A5FA]",  text: <><strong className="text-zinc-800 dark:text-zinc-100">8 pagamentos</strong> confirmados</>,             meta: "há 12 min · Pix e Boleto" },
+            { Icon: ArrowRight,    iBg: "bg-blue-50 dark:bg-[#60A5FA]/10",  iC: "text-blue-400 dark:text-[#60A5FA]",  text: <><strong className="text-zinc-800 dark:text-zinc-100">3 cobranças</strong> encaminhadas ao financeiro</>, meta: "há 34 min · Automação D+15" },
+            { Icon: AlertTriangle, iBg: "bg-red-50 dark:bg-[#EF4444]/10",   iC: "text-red-500 dark:text-[#EF4444]",   text: <><strong className="text-zinc-800 dark:text-zinc-100">2 falhas de envio</strong> detectadas</>,             meta: "há 1h · Número inválido" },
+            { Icon: Clock,         iBg: "bg-blue-50 dark:bg-[#93C5FD]/10",  iC: "text-blue-300 dark:text-[#93C5FD]",  text: <><strong className="text-zinc-800 dark:text-zinc-100">58 cobranças</strong> agendadas para amanhã</>,        meta: "há 2h · Automação programada" },
+            { Icon: DollarSign,    iBg: "bg-blue-50 dark:bg-[#3B82F6]/10",  iC: "text-blue-500 dark:text-[#60A5FA]",  text: <><strong className="text-zinc-800 dark:text-zinc-100">R$ 4.830,00</strong> recuperados esta semana</>,  meta: "há 3h · Resumo semanal" },
           ].map((act, i) => {
             const Icon = act.Icon;
             return (

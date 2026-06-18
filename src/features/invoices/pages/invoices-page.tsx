@@ -18,9 +18,9 @@ function formatDate(dateStr: string) {
 type InvoiceStatus = "paid" | "pending" | "overdue";
 
 const STATUS_CFG: Record<InvoiceStatus, { label: string; dot: string; bg: string; text: string }> = {
-  paid:    { label: "Pago",     dot: "bg-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-500/10", text: "text-emerald-600 dark:text-emerald-400" },
-  pending: { label: "Pendente", dot: "bg-amber-500",   bg: "bg-amber-50 dark:bg-amber-500/10",   text: "text-amber-600 dark:text-amber-400" },
-  overdue: { label: "Vencida",  dot: "bg-red-500",     bg: "bg-red-50 dark:bg-red-500/10",       text: "text-red-500 dark:text-red-400" },
+  paid:    { label: "Pago",     dot: "bg-[#3B82F6]",  bg: "bg-blue-50 dark:bg-[#3B82F6]/10",   text: "text-blue-500 dark:text-[#60A5FA]" },
+  pending: { label: "Pendente", dot: "bg-[#93C5FD]",  bg: "bg-blue-50 dark:bg-[#93C5FD]/10",   text: "text-blue-300 dark:text-[#93C5FD]" },
+  overdue: { label: "Vencida",  dot: "bg-[#EF4444]",  bg: "bg-red-50 dark:bg-[#EF4444]/10",    text: "text-red-500 dark:text-[#EF4444]" },
 };
 
 /* ─── dados ─── */
@@ -117,10 +117,10 @@ export function InvoicesPage() {
       {/* ── KPIs ── */}
       <div className="grid grid-cols-4 gap-4">
         {[
-          { label: "Total em Faturas",    value: total,   sub: `${INVOICES.length} faturas cadastradas`,              Icon: TrendingUp,    iBg: "bg-blue-50 dark:bg-blue-500/10",     iC: "text-blue-600 dark:text-blue-400",    vC: "text-zinc-800 dark:text-zinc-100" },
-          { label: "Faturas Pagas",       value: paid,    sub: `${paidCount} fatura${paidCount !== 1 ? "s" : ""} confirmada${paidCount !== 1 ? "s" : ""}`,       Icon: CheckCircle,   iBg: "bg-emerald-50 dark:bg-emerald-500/10",iC: "text-emerald-600 dark:text-emerald-400",vC: "text-emerald-600 dark:text-emerald-400" },
-          { label: "Faturas Pendentes",   value: pending, sub: `${pendingCount} aguardando pagamento`,               Icon: Clock,         iBg: "bg-amber-50 dark:bg-amber-500/10",   iC: "text-amber-600 dark:text-amber-400",  vC: "text-amber-600 dark:text-amber-400" },
-          { label: "Faturas Vencidas",    value: overdue, sub: `${overdueCount} fatura${overdueCount !== 1 ? "s" : ""} em atraso`,                               Icon: AlertTriangle, iBg: "bg-red-50 dark:bg-red-500/10",       iC: "text-red-500 dark:text-red-400",     vC: "text-red-500 dark:text-red-400" },
+          { label: "Total em Faturas",  value: total,   sub: `${INVOICES.length} faturas cadastradas`,                                                   Icon: TrendingUp,    iBg: "bg-blue-50 dark:bg-[#2563EB]/10",  iC: "text-blue-600 dark:text-[#3B82F6]",  vC: "text-zinc-800 dark:text-zinc-100" },
+          { label: "Faturas Pagas",     value: paid,    sub: `${paidCount} fatura${paidCount !== 1 ? "s" : ""} confirmada${paidCount !== 1 ? "s" : ""}`,         Icon: CheckCircle,   iBg: "bg-blue-50 dark:bg-[#3B82F6]/10",  iC: "text-blue-500 dark:text-[#60A5FA]",  vC: "text-blue-500 dark:text-[#60A5FA]" },
+          { label: "Faturas Pendentes", value: pending, sub: `${pendingCount} aguardando pagamento`,                                                              Icon: Clock,         iBg: "bg-blue-50 dark:bg-[#93C5FD]/10",  iC: "text-blue-300 dark:text-[#93C5FD]",  vC: "text-blue-300 dark:text-[#93C5FD]" },
+          { label: "Faturas Vencidas",  value: overdue, sub: `${overdueCount} fatura${overdueCount !== 1 ? "s" : ""} em atraso`,                                 Icon: AlertTriangle, iBg: "bg-red-50 dark:bg-[#EF4444]/10",   iC: "text-red-500 dark:text-[#EF4444]",   vC: "text-red-500 dark:text-[#EF4444]" },
         ].map((k) => {
           const Icon = k.Icon;
           return (
@@ -241,7 +241,7 @@ export function InvoicesPage() {
 
                   {/* Vencimento */}
                   <td className="py-4 px-4">
-                    <p className={`text-sm font-medium ${inv.status === "overdue" ? "text-red-500 dark:text-red-400" : "text-zinc-600 dark:text-zinc-300"}`}>
+                    <p className={`text-sm font-medium ${inv.status === "overdue" ? "text-red-500 dark:text-[#EF4444]" : "text-zinc-600 dark:text-zinc-300"}`}>
                       {formatDate(inv.dueDate)}
                     </p>
                   </td>
@@ -261,9 +261,8 @@ export function InvoicesPage() {
                         <Eye size={14} />
                       </button>
                       <button
-                        className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-green-50 dark:hover:bg-green-500/10"
+                        className="w-8 h-8 rounded-lg flex items-center justify-center text-[#3B82F6] hover:bg-[#3B82F6]/10 transition-colors"
                         title="Enviar via WhatsApp"
-                        style={{ color: "#25D366" }}
                       >
                         <MessageCircle size={14} />
                       </button>
