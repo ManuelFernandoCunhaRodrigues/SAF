@@ -3,8 +3,10 @@ import {
   Plus, Search, SlidersHorizontal, TrendingUp,
   Eye, MessageCircle, MoreHorizontal,
   Pencil, Copy, FileText, Printer,
-  DollarSign, CheckCircle, Clock, AlertTriangle,
+  DollarSign, CheckCircle, Clock, AlertTriangle, Loader2,
 } from "lucide-react";
+import { useInvoices } from "../hooks/use-invoices";
+import type { InvoiceStatus } from "../types/invoice";
 
 /* ─── helpers ─── */
 function formatCurrency(value: number) {
@@ -14,24 +16,12 @@ function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("pt-BR");
 }
 
-/* ─── tipos ─── */
-type InvoiceStatus = "paid" | "pending" | "overdue";
-
 const STATUS_CFG: Record<InvoiceStatus, { label: string; dot: string; bg: string; text: string }> = {
-  paid:    { label: "Pago",     dot: "bg-[#3B82F6]",  bg: "bg-blue-50 dark:bg-[#3B82F6]/10",   text: "text-blue-500 dark:text-[#60A5FA]" },
-  pending: { label: "Pendente", dot: "bg-[#93C5FD]",  bg: "bg-blue-50 dark:bg-[#93C5FD]/10",   text: "text-blue-300 dark:text-[#93C5FD]" },
-  overdue: { label: "Vencida",  dot: "bg-[#EF4444]",  bg: "bg-red-50 dark:bg-[#EF4444]/10",    text: "text-red-500 dark:text-[#EF4444]" },
+  paid:      { label: "Pago",      dot: "bg-[#3B82F6]",  bg: "bg-blue-50 dark:bg-[#3B82F6]/10",   text: "text-blue-500 dark:text-[#60A5FA]" },
+  pending:   { label: "Pendente",  dot: "bg-[#93C5FD]",  bg: "bg-blue-50 dark:bg-[#93C5FD]/10",   text: "text-blue-300 dark:text-[#93C5FD]" },
+  overdue:   { label: "Vencida",   dot: "bg-[#EF4444]",  bg: "bg-red-50 dark:bg-[#EF4444]/10",    text: "text-red-500 dark:text-[#EF4444]" },
+  cancelled: { label: "Cancelada", dot: "bg-zinc-400",   bg: "bg-zinc-100 dark:bg-zinc-800",      text: "text-zinc-500 dark:text-zinc-400" },
 };
-
-/* ─── dados ─── */
-const INVOICES: {
-  id: string; number: string; clientName: string; clientEmail: string;
-  amount: number; status: InvoiceStatus; dueDate: string; createdAt: string;
-}[] = [
-  { id: "1", number: "001", clientName: "Empresa A", clientEmail: "contato@empresaa.com", amount: 5000, status: "paid",    dueDate: "2026-06-29", createdAt: "2026-05-19" },
-  { id: "2", number: "002", clientName: "Empresa B", clientEmail: "contato@empresab.com", amount: 3500, status: "pending", dueDate: "2026-06-14", createdAt: "2026-05-14" },
-  { id: "3", number: "003", clientName: "Empresa C", clientEmail: "contato@empresac.com", amount: 8000, status: "overdue", dueDate: "2026-05-09", createdAt: "2026-04-09" },
-];
 
 /* ─── sub-componente: badge ─── */
 function StatusBadge({ status }: { status: InvoiceStatus }) {
@@ -79,10 +69,11 @@ function RowMenu() {
 
 /* ─── página principal ─── */
 export function InvoicesPage() {
+  const { data: invoices = [], isLoading, isError } = useInvoices();
   const [search, setSearch]       = useState("");
   const [statusFilter, setStatus] = useState<"Todos" | InvoiceStatus>("Todos");
 
-  const filtered = INVOICES.filter((inv) => {
+  const filtered = invoices.filter((inv) => {
     const matchSearch =
       inv.clientName.toLowerCase().includes(search.toLowerCase()) ||
       inv.number.includes(search);
@@ -90,14 +81,14 @@ export function InvoicesPage() {
     return matchSearch && matchStatus;
   });
 
-  const total   = INVOICES.reduce((s, i) => s + i.amount, 0);
-  const paid    = INVOICES.filter((i) => i.status === "paid").reduce((s, i) => s + i.amount, 0);
-  const pending = INVOICES.filter((i) => i.status === "pending").reduce((s, i) => s + i.amount, 0);
-  const overdue = INVOICES.filter((i) => i.status === "overdue").reduce((s, i) => s + i.amount, 0);
+  const total   = invoices.reduce((s, i) => s + i.amount, 0);
+  const paid    = invoices.filter((i) => i.status === "paid").reduce((s, i) => s + i.amount, 0);
+  const pending = invoices.filter((i) => i.status === "pending").reduce((s, i) => s + i.amount, 0);
+  const overdue = invoices.filter((i) => i.status === "overdue").reduce((s, i) => s + i.amount, 0);
 
-  const paidCount    = INVOICES.filter((i) => i.status === "paid").length;
-  const pendingCount = INVOICES.filter((i) => i.status === "pending").length;
-  const overdueCount = INVOICES.filter((i) => i.status === "overdue").length;
+  const paidCount    = invoices.filter((i) => i.status === "paid").length;
+  const pendingCount = invoices.filter((i) => i.status === "pending").length;
+  const overdueCount = invoices.filter((i) => i.status === "overdue").length;
 
   return (
     <div className="py-8 space-y-7">
@@ -117,7 +108,7 @@ export function InvoicesPage() {
       {/* ── KPIs ── */}
       <div className="grid grid-cols-4 gap-4">
         {[
-          { label: "Total em Faturas",  value: total,   sub: `${INVOICES.length} faturas cadastradas`,                                                   Icon: TrendingUp,    iBg: "bg-blue-50 dark:bg-[#2563EB]/10",  iC: "text-blue-600 dark:text-[#3B82F6]",  vC: "text-zinc-800 dark:text-zinc-100" },
+          { label: "Total em Faturas",  value: total,   sub: isLoading ? "Carregando faturas" : `${invoices.length} faturas cadastradas`,                 Icon: TrendingUp,    iBg: "bg-blue-50 dark:bg-[#2563EB]/10",  iC: "text-blue-600 dark:text-[#3B82F6]",  vC: "text-zinc-800 dark:text-zinc-100" },
           { label: "Faturas Pagas",     value: paid,    sub: `${paidCount} fatura${paidCount !== 1 ? "s" : ""} confirmada${paidCount !== 1 ? "s" : ""}`,         Icon: CheckCircle,   iBg: "bg-blue-50 dark:bg-[#3B82F6]/10",  iC: "text-blue-500 dark:text-[#60A5FA]",  vC: "text-blue-500 dark:text-[#60A5FA]" },
           { label: "Faturas Pendentes", value: pending, sub: `${pendingCount} aguardando pagamento`,                                                              Icon: Clock,         iBg: "bg-blue-50 dark:bg-[#93C5FD]/10",  iC: "text-blue-300 dark:text-[#93C5FD]",  vC: "text-blue-300 dark:text-[#93C5FD]" },
           { label: "Faturas Vencidas",  value: overdue, sub: `${overdueCount} fatura${overdueCount !== 1 ? "s" : ""} em atraso`,                                 Icon: AlertTriangle, iBg: "bg-red-50 dark:bg-[#EF4444]/10",   iC: "text-red-500 dark:text-[#EF4444]",   vC: "text-red-500 dark:text-[#EF4444]" },
@@ -170,6 +161,7 @@ export function InvoicesPage() {
                 { value: "paid",    label: "Pago" },
                 { value: "pending", label: "Pendente" },
                 { value: "overdue", label: "Vencida" },
+                { value: "cancelled", label: "Cancelada" },
               ] as const).map((f) => (
                 <button
                   key={f.value}
@@ -203,7 +195,28 @@ export function InvoicesPage() {
             </tr>
           </thead>
           <tbody>
-            {filtered.length > 0 ? (
+            {isLoading ? (
+              <tr>
+                <td colSpan={7} className="py-16 text-center">
+                  <div className="flex flex-col items-center gap-3">
+                    <Loader2 size={24} className="text-blue-600 animate-spin" />
+                    <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Carregando faturas...</p>
+                  </div>
+                </td>
+              </tr>
+            ) : isError ? (
+              <tr>
+                <td colSpan={7} className="py-16 text-center">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-[#EF4444]/10 flex items-center justify-center">
+                      <AlertTriangle size={20} className="text-red-500 dark:text-[#EF4444]" />
+                    </div>
+                    <p className="text-sm font-semibold text-[#EF4444]">Erro ao carregar faturas</p>
+                    <p className="text-xs text-zinc-400 dark:text-zinc-500">Verifique a conexão com a API</p>
+                  </div>
+                </td>
+              </tr>
+            ) : filtered.length > 0 ? (
               filtered.map((inv, i) => (
                 <tr
                   key={inv.id}
@@ -291,7 +304,7 @@ export function InvoicesPage() {
         {filtered.length > 0 && (
           <div className="flex items-center justify-between px-6 py-3.5 border-t border-zinc-100 dark:border-zinc-800">
             <p className="text-xs text-zinc-400 dark:text-zinc-600">
-              Exibindo {filtered.length} de {INVOICES.length} fatura{INVOICES.length !== 1 ? "s" : ""}
+              Exibindo {filtered.length} de {invoices.length} fatura{invoices.length !== 1 ? "s" : ""}
             </p>
             <div className="flex items-center gap-1">
               {["←", "1", "→"].map((p) => (

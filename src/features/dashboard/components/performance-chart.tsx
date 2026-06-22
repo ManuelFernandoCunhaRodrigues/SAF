@@ -18,8 +18,6 @@ const CHART_DATA = [
   { month: "Jun 25", cobrancas: 59000, meta: 64000 },
 ];
 
-const fmtAxisBRL = (v: number) => `R$ ${(v / 1000).toFixed(0)} mil`;
-
 const fmtCurrency = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
@@ -143,8 +141,8 @@ export function PerformanceChart() {
       </div>
 
       {/* Gráfico */}
-      <div className="flex-1 min-h-[220px]">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="min-h-[220px]">
+        <ResponsiveContainer width="100%" height={220}>
           <AreaChart
             data={CHART_DATA}
             margin={{ top: 10, right: 8, left: 4, bottom: 0 }}

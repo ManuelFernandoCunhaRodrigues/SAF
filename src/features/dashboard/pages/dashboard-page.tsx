@@ -47,6 +47,41 @@ const ETAPA_CFG: Record<string, string> = {
 /* ─── card base reutilizável ─── */
 const C = "bg-white dark:bg-[#18181B] border border-zinc-100 dark:border-[#27272A] rounded-2xl p-6";
 
+function safeNumber(value: number | string | null | undefined) {
+  const numericValue = Number(value ?? 0);
+  return Number.isFinite(numericValue) ? numericValue : 0;
+}
+
+function formatNumber(value: number | string | null | undefined) {
+  return safeNumber(value).toLocaleString("pt-BR");
+}
+
+function formatCurrency(value: number | string | null | undefined) {
+  return safeNumber(value).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function KpiValue({
+  value,
+  isLoading,
+  isError,
+}: {
+  value: string;
+  isLoading: boolean;
+  isError: boolean;
+}) {
+  if (isLoading) {
+    return (
+      <span className="block h-[25px] w-24 rounded-md bg-zinc-200 dark:bg-zinc-800 animate-pulse" />
+    );
+  }
+
+  return (
+    <span className={isError ? "text-red-500 dark:text-[#EF4444]" : undefined}>
+      {isError ? "Erro" : value}
+    </span>
+  );
+}
+
 /* ─── export helpers ─── */
 function triggerDownload(content: string, filename: string, mime: string) {
   const blob = new Blob(["﻿" + content], { type: mime });
@@ -133,17 +168,20 @@ function ExportMenu() {
 export function DashboardPage() {
   const { user } = useAuthContext();
   const [animated, setAnimated] = useState(false);
-  const { data: stats, isLoading: statsLoading, isError: statsError } = useDashboardStats();
-
-  const fmt = (n: number) => n.toLocaleString("pt-BR");
-  const fmtBRL = (n: number) =>
-    n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  const {
+    data: stats,
+    isLoading: statsLoading,
+    isFetching: statsFetching,
+    isError: statsError,
+    refetch,
+  } = useDashboardStats();
+  const shouldShowCardError = statsError && !stats;
 
   const kpis = [
-    { label: "Cobranças enviadas",   value: statsLoading ? "—" : fmt(stats?.totalInvoices ?? 0),    change: "", up: true  as true | false | null, sub: "total cadastradas", Icon: Zap,           iBg: "bg-blue-50 dark:bg-[#2563EB]/10",    iC: "text-blue-600 dark:text-[#3B82F6]" },
-    { label: "Pagamentos recebidos", value: statsLoading ? "—" : fmtBRL(stats?.totalReceived ?? 0), change: "", up: true  as true | false | null, sub: "valor total pago",  Icon: DollarSign,    iBg: "bg-blue-50 dark:bg-[#3B82F6]/10",    iC: "text-blue-500 dark:text-[#60A5FA]" },
-    { label: "Pendentes",            value: statsLoading ? "—" : fmt(stats?.pending ?? 0),          change: "", up: null  as true | false | null, sub: "aguardando pag.",   Icon: Clock,         iBg: "bg-blue-50 dark:bg-[#93C5FD]/10",    iC: "text-blue-300 dark:text-[#93C5FD]" },
-    { label: "Inadimplentes",        value: statsLoading ? "—" : fmt(stats?.overdue ?? 0),          change: "", up: false as true | false | null, sub: "requer atenção",    Icon: AlertTriangle, iBg: "bg-red-50 dark:bg-[#EF4444]/10",     iC: "text-red-500 dark:text-[#EF4444]" },
+    { label: "Cobranças enviadas",   value: formatNumber(stats?.totalInvoices),    change: "", up: true  as true | false | null, sub: "total cadastradas", Icon: Zap,           iBg: "bg-blue-50 dark:bg-[#2563EB]/10",    iC: "text-blue-600 dark:text-[#3B82F6]" },
+    { label: "Pagamentos recebidos", value: formatCurrency(stats?.totalReceived), change: "", up: true  as true | false | null, sub: "valor total pago",  Icon: DollarSign,    iBg: "bg-blue-50 dark:bg-[#3B82F6]/10",    iC: "text-blue-500 dark:text-[#60A5FA]" },
+    { label: "Pendentes",            value: formatNumber(stats?.pending),          change: "", up: null  as true | false | null, sub: "aguardando pag.",   Icon: Clock,         iBg: "bg-blue-50 dark:bg-[#93C5FD]/10",    iC: "text-blue-300 dark:text-[#93C5FD]" },
+    { label: "Inadimplentes",        value: formatNumber(stats?.overdue),          change: "", up: false as true | false | null, sub: "requer atenção",    Icon: AlertTriangle, iBg: "bg-red-50 dark:bg-[#EF4444]/10",     iC: "text-red-500 dark:text-[#EF4444]" },
   ];
 
   useEffect(() => {
@@ -179,22 +217,29 @@ export function DashboardPage() {
 
       {/* ── KPIs ── */}
       {statsError && (
-        <div className="rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400">
-          Não foi possível carregar os indicadores. Verifique a conexão com a API.
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-400">
+          <span>Não foi possível carregar os indicadores. Verifique a conexão com a API.</span>
+          <button
+            type="button"
+            onClick={() => void refetch()}
+            className="text-xs font-semibold text-red-600 dark:text-red-300 hover:underline whitespace-nowrap"
+          >
+            Tentar novamente
+          </button>
         </div>
       )}
       <div className="grid grid-cols-4 gap-4">
         {kpis.map((k) => {
           const Icon = k.Icon;
           return (
-            <div key={k.label} className={`${C} flex items-center gap-3`}>
+            <div key={k.label} className={`${C} flex items-center gap-3`} aria-busy={statsLoading || statsFetching}>
               <div className={`w-[42px] h-[42px] rounded-xl ${k.iBg} flex items-center justify-center flex-shrink-0`}>
                 <Icon size={18} className={k.iC} />
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider truncate">{k.label}</p>
-                <p className={`text-[21px] font-bold text-zinc-800 dark:text-zinc-100 mt-0.5 leading-none tracking-tight ${statsLoading ? "animate-pulse text-zinc-300 dark:text-zinc-700" : ""}`}>
-                  {k.value}
+                <p className="text-[21px] font-bold text-zinc-800 dark:text-zinc-100 mt-0.5 leading-none tracking-tight min-h-[25px] flex items-center">
+                  <KpiValue value={k.value} isLoading={statsLoading} isError={shouldShowCardError} />
                 </p>
                 <span className="text-[10px] text-zinc-400 dark:text-zinc-500">{k.sub}</span>
               </div>
