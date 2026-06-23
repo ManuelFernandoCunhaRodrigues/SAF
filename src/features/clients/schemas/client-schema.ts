@@ -10,9 +10,7 @@ export const createClientSchema = z.object({
     }),
   phone: z.string().optional(),
   document: z.string().optional(),
-  type: z.enum(["individual", "company"], {
-    error: "Tipo é obrigatório",
-  }),
+  type: z.enum(["individual", "company"]),
   status: z.enum(["active", "inactive"]),
 });
 
