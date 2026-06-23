@@ -1,9 +1,19 @@
+import { useState } from "react";
 import { Plus, Users, UserCheck, UserX, Building2 } from "lucide-react";
 import { useClients } from "../hooks/use-clients";
 import { ClientTable } from "../components/client-table";
+import { ClientForm } from "../components/client-form";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/shared/components/ui/dialog";
 
 export function ClientsPage() {
   const { data: clients = [], isLoading, isError } = useClients();
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const total     = clients.length;
   const active    = clients.filter((c) => c.status === "active").length;
@@ -62,7 +72,10 @@ export function ClientsPage() {
             Gerencie os clientes do sistema
           </p>
         </div>
-        <button className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors whitespace-nowrap">
+        <button
+          onClick={() => setDialogOpen(true)}
+          className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors whitespace-nowrap"
+        >
           <Plus size={15} strokeWidth={2.5} />
           Novo Cliente
         </button>
@@ -101,6 +114,25 @@ export function ClientsPage() {
         isLoading={isLoading}
         isError={isError}
       />
+
+      {/* Modal de cadastro */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-zinc-800 dark:text-zinc-100">
+              Novo Cliente
+            </DialogTitle>
+            <DialogDescription className="text-sm text-zinc-500 dark:text-zinc-400">
+              Preencha os dados para cadastrar um novo cliente no sistema.
+            </DialogDescription>
+          </DialogHeader>
+
+          <ClientForm
+            onSuccess={() => setDialogOpen(false)}
+            onCancel={() => setDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
 
     </div>
   );
