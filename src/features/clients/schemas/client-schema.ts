@@ -11,7 +11,7 @@ export const createClientSchema = z.object({
   phone: z.string().optional(),
   document: z.string().optional(),
   type: z.enum(["individual", "company"], {
-    required_error: "Tipo é obrigatório",
+    error: "Tipo é obrigatório",
   }),
   status: z.enum(["active", "inactive"]),
 });
