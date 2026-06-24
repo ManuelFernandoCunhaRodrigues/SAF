@@ -38,7 +38,6 @@ export function ClientForm({ onSuccess, onCancel }: ClientFormProps) {
       email: "",
       phone: "",
       document: "",
-      type: "individual",
       status: "active",
     },
   });
@@ -80,7 +79,7 @@ export function ClientForm({ onSuccess, onCancel }: ClientFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                E-mail
+                E-mail <span className="text-red-500">*</span>
               </FormLabel>
               <FormControl>
                 <Input type="email" placeholder="cliente@email.com" {...field} />
@@ -98,7 +97,7 @@ export function ClientForm({ onSuccess, onCancel }: ClientFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                  Telefone
+                  Telefone <span className="text-red-500">*</span>
                 </FormLabel>
                 <FormControl>
                   <Input placeholder="(99) 99999-9999" {...field} />
@@ -114,7 +113,7 @@ export function ClientForm({ onSuccess, onCancel }: ClientFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                  CPF / CNPJ
+                  CPF / CNPJ <span className="text-red-500">*</span>
                 </FormLabel>
                 <FormControl>
                   <Input placeholder="000.000.000-00" {...field} />
@@ -125,56 +124,30 @@ export function ClientForm({ onSuccess, onCancel }: ClientFormProps) {
           />
         </div>
 
-        {/* Tipo + Status */}
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                  Tipo <span className="text-red-500">*</span>
-                </FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o tipo" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="individual">Pessoa Física</SelectItem>
-                    <SelectItem value="company">Empresa</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                  Status <span className="text-red-500">*</span>
-                </FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o status" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="active">Ativo</SelectItem>
-                    <SelectItem value="inactive">Inativo</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        {/* Status */}
+        <FormField
+          control={form.control}
+          name="status"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                Status <span className="text-red-500">*</span>
+              </FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o status" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="active">Ativo</SelectItem>
+                  <SelectItem value="inactive">Inativo</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         {/* Erro global */}
         {errorMessage && (

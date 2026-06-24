@@ -3,9 +3,9 @@ import {
   Eye, Pencil, Trash2, MoreHorizontal,
   Loader2, AlertTriangle, Users,
 } from "lucide-react";
-import type { Client, ClientType } from "../types/client";
+import type { Client } from "../types/client";
 import { ClientStatusBadge } from "./client-status-badge";
-import { ClientSearch, type TypeFilter } from "./client-search";
+import { ClientSearch, type StatusFilter } from "./client-search";
 
 type ClientTableProps = {
   clients: Client[];
@@ -14,20 +14,7 @@ type ClientTableProps = {
   isError: boolean;
 };
 
-const TYPE_CFG: Record<ClientType, { label: string; bg: string; text: string }> = {
-  individual: {
-    label: "Pessoa Física",
-    bg: "bg-purple-50 dark:bg-purple-500/10",
-    text: "text-purple-600 dark:text-purple-400",
-  },
-  company: {
-    label: "Empresa",
-    bg: "bg-blue-50 dark:bg-blue-500/10",
-    text: "text-blue-600 dark:text-blue-400",
-  },
-};
-
-const COLS = ["Nome", "Email", "Telefone", "Documento", "Tipo", "Status", "Criado em", "Ações"];
+const COLS = ["Nome", "Email", "Telefone", "Documento", "Status", "Criado em", "Ações"];
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("pt-BR");
@@ -69,12 +56,16 @@ function RowMenu() {
 
 export function ClientTable({ clients, totalCount, isLoading, isError }: ClientTableProps) {
   const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
   const filtered = clients.filter((c) => {
-    const matchSearch = (c.name ?? "").toLowerCase().includes(search.toLowerCase());
-    const matchType = typeFilter === "all" || c.type === typeFilter;
-    return matchSearch && matchType;
+    const q = search.toLowerCase();
+    const matchSearch =
+      (c.name ?? "").toLowerCase().includes(q) ||
+      (c.email ?? "").toLowerCase().includes(q) ||
+      (c.document ?? "").toLowerCase().includes(q);
+    const matchStatus = statusFilter === "all" || c.status === statusFilter;
+    return matchSearch && matchStatus;
   });
 
   return (
@@ -91,14 +82,14 @@ export function ClientTable({ clients, totalCount, isLoading, isError }: ClientT
         <ClientSearch
           search={search}
           onSearch={setSearch}
-          typeFilter={typeFilter}
-          onTypeChange={setTypeFilter}
+          statusFilter={statusFilter}
+          onStatusChange={setStatusFilter}
         />
       </div>
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse min-w-[800px]">
+        <table className="w-full border-collapse min-w-[700px]">
           <thead>
             <tr className="bg-zinc-50 dark:bg-zinc-800/50">
               {COLS.map((col, i) => (
@@ -145,7 +136,6 @@ export function ClientTable({ clients, totalCount, isLoading, isError }: ClientT
               </tr>
             ) : filtered.length > 0 ? (
               filtered.map((client) => {
-                const typeCfg = TYPE_CFG[client.type];
                 const initial = (client.name ?? "?")[0].toUpperCase();
                 return (
                   <tr
@@ -183,15 +173,6 @@ export function ClientTable({ clients, totalCount, isLoading, isError }: ClientT
                       <p className="text-sm font-mono text-zinc-600 dark:text-zinc-300 whitespace-nowrap">
                         {client.document ?? "—"}
                       </p>
-                    </td>
-
-                    {/* Tipo */}
-                    <td className="py-4 px-4">
-                      <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${typeCfg.bg} ${typeCfg.text}`}
-                      >
-                        {typeCfg.label}
-                      </span>
                     </td>
 
                     {/* Status */}
