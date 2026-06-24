@@ -5,6 +5,7 @@ import { DashboardPage } from "@/features/dashboard/pages/dashboard-page";
 import { UsersPage } from "@/features/users/pages/users-page";
 import { InvoicesPage } from "@/features/invoices/pages/invoices-page";
 import { ClientsPage } from "@/features/clients/pages/clients-page";
+import { CreateClientPage } from "@/features/clients/pages/create-client-page";
 import { SettingsPage } from "@/features/settings/pages/settings-page";
 import { NotFoundPage } from "@/overview/not-found/not-found-page";
 import { PanelLayoutWithProvider } from "@/shared/components/layout/painel-layout-with-provider";
@@ -28,6 +29,7 @@ export function AppRoutes() {
         <Route path="usuarios" element={<UsersPage />} />
         <Route path="faturas" element={<InvoicesPage />} />
         <Route path="clientes" element={<ClientsPage />} />
+        <Route path="clientes/novo" element={<CreateClientPage />} />
         <Route path="configuracoes" element={<SettingsPage />} />
       </Route>
 
