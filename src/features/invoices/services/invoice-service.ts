@@ -3,6 +3,7 @@ import type {
   CreateInvoiceData,
   Invoice,
   InvoiceApiResponse,
+  InvoiceStatus,
   UpdateInvoiceData,
 } from "../types/invoice";
 
@@ -16,8 +17,10 @@ function mapInvoice(invoice: InvoiceApiResponse): Invoice {
   };
 }
 
-export async function getInvoices(): Promise<Invoice[]> {
-  const response = await api.get<InvoiceApiResponse[]>("/invoices");
+export async function getInvoices(status?: InvoiceStatus): Promise<Invoice[]> {
+  const response = await api.get<InvoiceApiResponse[]>("/invoices", {
+    params: status ? { status } : undefined,
+  });
   return response.data.map(mapInvoice);
 }
 

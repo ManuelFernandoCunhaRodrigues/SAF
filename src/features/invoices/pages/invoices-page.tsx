@@ -69,26 +69,33 @@ function RowMenu() {
 
 /* ─── página principal ─── */
 export function InvoicesPage() {
-  const { data: invoices = [], isLoading, isError } = useInvoices();
   const [search, setSearch]       = useState("");
   const [statusFilter, setStatus] = useState<"Todos" | InvoiceStatus>("Todos");
 
-  const filtered = invoices.filter((inv) => {
-    const matchSearch =
-      inv.clientName.toLowerCase().includes(search.toLowerCase()) ||
-      inv.number.includes(search);
-    const matchStatus = statusFilter === "Todos" || inv.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
+  const activeStatus = statusFilter !== "Todos" ? statusFilter as InvoiceStatus : undefined;
 
-  const total   = invoices.reduce((s, i) => s + i.amount, 0);
-  const paid    = invoices.filter((i) => i.status === "paid").reduce((s, i) => s + i.amount, 0);
-  const pending = invoices.filter((i) => i.status === "pending").reduce((s, i) => s + i.amount, 0);
-  const overdue = invoices.filter((i) => i.status === "overdue").reduce((s, i) => s + i.amount, 0);
+  // Query sem filtro: usada exclusivamente para os KPIs (sempre mostra totais reais)
+  const { data: allInvoices = [] } = useInvoices();
 
-  const paidCount    = invoices.filter((i) => i.status === "paid").length;
-  const pendingCount = invoices.filter((i) => i.status === "pending").length;
-  const overdueCount = invoices.filter((i) => i.status === "overdue").length;
+  // Query com filtro de status: alimenta a tabela (server-side)
+  // Quando activeStatus é undefined, queryKey é ['invoices','all'] — mesma query acima, sem request extra
+  const { data: statusFiltered = [], isLoading, isError } = useInvoices(activeStatus);
+
+  // Filtro de busca aplicado client-side sobre o resultado já filtrado pelo servidor
+  const filtered = statusFiltered.filter((inv) =>
+    inv.clientName.toLowerCase().includes(search.toLowerCase()) ||
+    inv.number.includes(search)
+  );
+
+  // KPIs sempre calculados a partir de TODAS as faturas
+  const total   = allInvoices.reduce((s, i) => s + i.amount, 0);
+  const paid    = allInvoices.filter((i) => i.status === "paid").reduce((s, i) => s + i.amount, 0);
+  const pending = allInvoices.filter((i) => i.status === "pending").reduce((s, i) => s + i.amount, 0);
+  const overdue = allInvoices.filter((i) => i.status === "overdue").reduce((s, i) => s + i.amount, 0);
+
+  const paidCount    = allInvoices.filter((i) => i.status === "paid").length;
+  const pendingCount = allInvoices.filter((i) => i.status === "pending").length;
+  const overdueCount = allInvoices.filter((i) => i.status === "overdue").length;
 
   return (
     <div className="py-8 space-y-7">
@@ -108,7 +115,7 @@ export function InvoicesPage() {
       {/* ── KPIs ── */}
       <div className="grid grid-cols-4 gap-4">
         {[
-          { label: "Total em Faturas",  value: total,   sub: isLoading ? "Carregando faturas" : `${invoices.length} faturas cadastradas`,                 Icon: TrendingUp,    iBg: "bg-blue-50 dark:bg-[#2563EB]/10",  iC: "text-blue-600 dark:text-[#3B82F6]",  vC: "text-zinc-800 dark:text-zinc-100" },
+          { label: "Total em Faturas",  value: total,   sub: isLoading ? "Carregando faturas" : `${allInvoices.length} faturas cadastradas`,                 Icon: TrendingUp,    iBg: "bg-blue-50 dark:bg-[#2563EB]/10",  iC: "text-blue-600 dark:text-[#3B82F6]",  vC: "text-zinc-800 dark:text-zinc-100" },
           { label: "Faturas Pagas",     value: paid,    sub: `${paidCount} fatura${paidCount !== 1 ? "s" : ""} confirmada${paidCount !== 1 ? "s" : ""}`,         Icon: CheckCircle,   iBg: "bg-blue-50 dark:bg-[#3B82F6]/10",  iC: "text-blue-500 dark:text-[#60A5FA]",  vC: "text-blue-500 dark:text-[#60A5FA]" },
           { label: "Faturas Pendentes", value: pending, sub: `${pendingCount} aguardando pagamento`,                                                              Icon: Clock,         iBg: "bg-blue-50 dark:bg-[#93C5FD]/10",  iC: "text-blue-300 dark:text-[#93C5FD]",  vC: "text-blue-300 dark:text-[#93C5FD]" },
           { label: "Faturas Vencidas",  value: overdue, sub: `${overdueCount} fatura${overdueCount !== 1 ? "s" : ""} em atraso`,                                 Icon: AlertTriangle, iBg: "bg-red-50 dark:bg-[#EF4444]/10",   iC: "text-red-500 dark:text-[#EF4444]",   vC: "text-red-500 dark:text-[#EF4444]" },
@@ -304,7 +311,7 @@ export function InvoicesPage() {
         {filtered.length > 0 && (
           <div className="flex items-center justify-between px-6 py-3.5 border-t border-zinc-100 dark:border-zinc-800">
             <p className="text-xs text-zinc-400 dark:text-zinc-600">
-              Exibindo {filtered.length} de {invoices.length} fatura{invoices.length !== 1 ? "s" : ""}
+              Exibindo {filtered.length} de {statusFiltered.length} fatura{statusFiltered.length !== 1 ? "s" : ""}
             </p>
             <div className="flex items-center gap-1">
               {["←", "1", "→"].map((p) => (
