@@ -3,6 +3,9 @@ export type AuthUser = {
   name: string;
   email: string;
   role: "admin" | "user";
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type LoginCredentials = {

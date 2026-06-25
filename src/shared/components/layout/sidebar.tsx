@@ -7,6 +7,7 @@ import {
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
+  UserCheck,
 } from "lucide-react";
 import { useSidebarContext } from "@/shared/context/use-sidebar";
 import { cn } from "@/shared/lib/utils";
@@ -15,6 +16,7 @@ const NAV_ITEMS = [
   { label: "Dashboard",     href: "/painel/dashboard",      icon: LayoutDashboard },
   { label: "Usuários",      href: "/painel/usuarios",        icon: Users },
   { label: "Faturas",       href: "/painel/faturas",         icon: FileText },
+  { label: "Clientes",      href: "/painel/clientes",        icon: UserCheck },
   { label: "Configurações", href: "/painel/configuracoes",   icon: Settings },
 ];
 

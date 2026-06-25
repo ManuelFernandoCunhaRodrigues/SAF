@@ -155,7 +155,7 @@ export function SettingsPage() {
             {saved ? "Salvo!" : "Salvar alterações"}
           </button>
           {saved && (
-            <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+            <p className="text-xs text-[#60A5FA] font-medium">
               Alterações salvas com sucesso.
             </p>
           )}
@@ -188,7 +188,7 @@ export function SettingsPage() {
             {passwordSaved ? "Atualizado!" : "Atualizar senha"}
           </button>
           {passwordSaved && (
-            <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+            <p className="text-xs text-[#60A5FA] font-medium">
               Senha atualizada com sucesso.
             </p>
           )}

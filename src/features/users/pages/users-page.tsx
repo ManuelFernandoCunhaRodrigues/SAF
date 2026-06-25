@@ -6,12 +6,12 @@ import { useUsers } from "../hooks/use-users";
 type Role = "Admin" | "User";
 
 const AVATAR_COLORS = [
-  "bg-blue-500",
-  "bg-violet-500",
-  "bg-emerald-500",
-  "bg-amber-500",
-  "bg-rose-500",
-  "bg-cyan-500",
+  "bg-[#2563EB]",
+  "bg-[#1D4ED8]",
+  "bg-[#3B82F6]",
+  "bg-[#1E40AF]",
+  "bg-[#60A5FA]",
+  "bg-[#1E3A8A]",
 ];
 
 function getInitials(name: string): string {
@@ -38,9 +38,9 @@ export function UsersPage() {
   const regular = users.filter((u) => u.role === "user").length;
 
   const STATS = [
-    { label: "Total de usuários", value: String(users.length), Icon: Users,       iBg: "bg-blue-50 dark:bg-blue-500/10",       iC: "text-blue-600 dark:text-blue-400" },
-    { label: "Administradores",   value: String(admins),        Icon: ShieldCheck, iBg: "bg-violet-50 dark:bg-violet-500/10",   iC: "text-violet-600 dark:text-violet-400" },
-    { label: "Usuários comuns",   value: String(regular),       Icon: UserIcon,    iBg: "bg-emerald-50 dark:bg-emerald-500/10", iC: "text-emerald-600 dark:text-emerald-400" },
+    { label: "Total de usuários", value: String(users.length), Icon: Users,       iBg: "bg-blue-50 dark:bg-[#2563EB]/10", iC: "text-blue-600 dark:text-[#3B82F6]" },
+    { label: "Administradores",   value: String(admins),        Icon: ShieldCheck, iBg: "bg-blue-50 dark:bg-[#60A5FA]/10",  iC: "text-blue-400 dark:text-[#60A5FA]" },
+    { label: "Usuários comuns",   value: String(regular),       Icon: UserIcon,    iBg: "bg-blue-50 dark:bg-[#93C5FD]/10",  iC: "text-blue-300 dark:text-[#93C5FD]" },
   ];
 
   const filtered = users.filter((u) => {
@@ -132,7 +132,7 @@ export function UsersPage() {
           </div>
         ) : isError ? (
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-12 shadow-sm flex flex-col items-center gap-3">
-            <p className="text-sm font-semibold text-red-500">Erro ao carregar usuários</p>
+            <p className="text-sm font-semibold text-[#EF4444]">Erro ao carregar usuários</p>
             <p className="text-xs text-zinc-400 dark:text-zinc-500">Tente novamente mais tarde</p>
           </div>
         ) : filtered.length > 0 ? (

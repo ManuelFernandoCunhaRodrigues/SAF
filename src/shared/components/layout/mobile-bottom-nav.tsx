@@ -5,15 +5,17 @@ import {
   FileText,
   Settings,
   LogOut,
+  UserCheck,
 } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { useAuthContext } from "@/app/providers/use-auth";
 
 const PRIMARY_ITEMS = [
-  { label: "Dashboard", href: "/painel/dashboard", icon: LayoutDashboard },
-  { label: "Usuários", href: "/painel/usuarios", icon: Users },
-  { label: "Faturas", href: "/painel/faturas", icon: FileText },
-  { label: "Configurações", href: "/painel/configuracoes", icon: Settings },
+  { label: "Dashboard", href: "/painel/dashboard",   icon: LayoutDashboard },
+  { label: "Usuários",  href: "/painel/usuarios",    icon: Users },
+  { label: "Faturas",   href: "/painel/faturas",     icon: FileText },
+  { label: "Clientes",  href: "/painel/clientes",    icon: UserCheck },
+  { label: "Config.",   href: "/painel/configuracoes", icon: Settings },
 ];
 
 export function MobileBottomNav() {
