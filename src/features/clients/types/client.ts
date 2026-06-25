@@ -1,4 +1,5 @@
 export type ClientStatus = "active" | "inactive";
+export type ClientType = "individual" | "company";
 
 export type Client = {
   id: string;
@@ -6,6 +7,7 @@ export type Client = {
   email: string;
   phone: string;
   document: string;
+  type: ClientType;
   status: ClientStatus;
   createdAt: string;
   updatedAt: string;

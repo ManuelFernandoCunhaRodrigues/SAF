@@ -5,7 +5,7 @@ export const createClientSchema = z.object({
   email: z.string().email("E-mail inválido"),
   phone: z.string().min(1, "Telefone é obrigatório"),
   document: z.string().min(1, "Documento é obrigatório"),
-  status: z.enum(["active", "inactive"]).optional().default("active"),
+  status: z.enum(["active", "inactive"]),
 });
 
 export type CreateClientInput = z.infer<typeof createClientSchema>;
