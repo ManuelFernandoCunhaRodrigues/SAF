@@ -180,11 +180,10 @@ export function InvoicesPage() {
   /* defaultValues para edição — dueDate precisa ser yyyy-mm-dd para input[type=date] */
   const editDefaultValues = editInvoice
     ? {
-        clientName:  editInvoice.clientName,
-        clientEmail: editInvoice.clientEmail,
-        amount:      editInvoice.amount,
-        dueDate:     editInvoice.dueDate.slice(0, 10),
-        status:      editInvoice.status,
+        clientId: editInvoice.clientId ?? "",
+        amount:   editInvoice.amount,
+        dueDate:  editInvoice.dueDate.slice(0, 10),
+        status:   editInvoice.status,
       }
     : undefined;
 

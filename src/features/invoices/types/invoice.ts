@@ -3,8 +3,17 @@ export type InvoiceStatus = "paid" | "pending" | "overdue" | "cancelled";
 export type Invoice = {
   id: string;
   number: string;
+  clientId?: string | null;
+  client?: {
+    id: string;
+    name: string;
+    email?: string | null;
+    phone?: string | null;
+    document?: string | null;
+    status: "active" | "inactive";
+  };
   clientName: string;
-  clientEmail: string;
+  clientEmail: string | null;
   amount: number;
   status: InvoiceStatus;
   dueDate: string;
@@ -17,11 +26,15 @@ export type InvoiceApiResponse = Omit<Invoice, "amount"> & {
 };
 
 export type CreateInvoiceData = {
-  clientName: string;
-  clientEmail: string;
+  clientId: string;
   amount: number;
   status?: InvoiceStatus;
   dueDate: string;
 };
 
-export type UpdateInvoiceData = Partial<CreateInvoiceData>;
+export type UpdateInvoiceData = Partial<{
+  clientId: string;
+  amount: number;
+  status: InvoiceStatus;
+  dueDate: string;
+}>;
