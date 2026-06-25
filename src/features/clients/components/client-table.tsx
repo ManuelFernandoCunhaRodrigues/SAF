@@ -1,17 +1,21 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import {
-  Eye, Pencil, Trash2, MoreHorizontal,
+  Pencil, Trash2, MoreHorizontal,
   Loader2, AlertTriangle, Users,
 } from "lucide-react";
 import type { Client } from "../types/client";
 import { ClientStatusBadge } from "./client-status-badge";
 import { ClientSearch, type StatusFilter } from "./client-search";
+import { useDeleteClient } from "../hooks/use-delete-client";
 
 type ClientTableProps = {
   clients: Client[];
   totalCount: number;
   isLoading: boolean;
   isError: boolean;
+  search: string;
+  onSearch: (value: string) => void;
 };
 
 const COLS = ["Nome", "Email", "Telefone", "Documento", "Status", "Criado em", "Ações"];
@@ -20,13 +24,32 @@ function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("pt-BR");
 }
 
-function RowMenu() {
+type RowMenuProps = {
+  clientId: string;
+  onEdit: () => void;
+  onDelete: () => void;
+  isDeleting: boolean;
+};
+
+function RowMenu({ onEdit, onDelete, isDeleting }: RowMenuProps) {
   const [open, setOpen] = useState(false);
+
+  function handleEdit() {
+    setOpen(false);
+    onEdit();
+  }
+
+  function handleDelete() {
+    setOpen(false);
+    onDelete();
+  }
+
   return (
     <div className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+        disabled={isDeleting}
+        className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
         <MoreHorizontal size={15} />
       </button>
@@ -34,19 +57,20 @@ function RowMenu() {
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
           <div className="absolute right-0 top-full mt-1.5 w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-lg z-20 overflow-hidden py-1">
-            {[
-              { Icon: Eye,    label: "Ver detalhes",    cls: "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800" },
-              { Icon: Pencil, label: "Editar cliente",  cls: "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800" },
-              { Icon: Trash2, label: "Excluir cliente", cls: "text-[#EF4444] hover:bg-[#EF4444]/10" },
-            ].map(({ Icon, label, cls }) => (
-              <button
-                key={label}
-                className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2.5 transition-colors ${cls}`}
-              >
-                <Icon size={13} className="text-zinc-400 dark:text-zinc-500" />
-                {label}
-              </button>
-            ))}
+            <button
+              onClick={handleEdit}
+              className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-2.5 transition-colors text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+            >
+              <Pencil size={13} className="text-zinc-400 dark:text-zinc-500" />
+              Editar cliente
+            </button>
+            <button
+              onClick={handleDelete}
+              className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-2.5 transition-colors text-[#EF4444] hover:bg-[#EF4444]/10"
+            >
+              <Trash2 size={13} className="text-[#EF4444]" />
+              Excluir cliente
+            </button>
           </div>
         </>
       )}
@@ -54,19 +78,31 @@ function RowMenu() {
   );
 }
 
-export function ClientTable({ clients, totalCount, isLoading, isError }: ClientTableProps) {
-  const [search, setSearch] = useState("");
+export function ClientTable({
+  clients,
+  totalCount,
+  isLoading,
+  isError,
+  search,
+  onSearch,
+}: ClientTableProps) {
+  const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const { mutate: deleteClient, isPending: isDeleting, variables: deletingId } = useDeleteClient();
 
-  const filtered = clients.filter((c) => {
-    const q = search.toLowerCase();
-    const matchSearch =
-      (c.name ?? "").toLowerCase().includes(q) ||
-      (c.email ?? "").toLowerCase().includes(q) ||
-      (c.document ?? "").toLowerCase().includes(q);
-    const matchStatus = statusFilter === "all" || c.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
+  const filtered = clients.filter(
+    (c) => statusFilter === "all" || c.status === statusFilter,
+  );
+
+  function handleEdit(id: string) {
+    navigate(`/painel/clientes/${id}/editar`);
+  }
+
+  function handleDelete(id: string, name: string) {
+    if (!window.confirm(`Tem certeza que deseja excluir o cliente "${name}"? Esta ação não pode ser desfeita.`))
+      return;
+    deleteClient(id);
+  }
 
   return (
     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden">
@@ -81,7 +117,7 @@ export function ClientTable({ clients, totalCount, isLoading, isError }: ClientT
         </div>
         <ClientSearch
           search={search}
-          onSearch={setSearch}
+          onSearch={onSearch}
           statusFilter={statusFilter}
           onStatusChange={setStatusFilter}
         />
@@ -136,11 +172,14 @@ export function ClientTable({ clients, totalCount, isLoading, isError }: ClientT
               </tr>
             ) : filtered.length > 0 ? (
               filtered.map((client) => {
+                const isThisDeleting = isDeleting && deletingId === client.id;
                 const initial = (client.name ?? "?")[0].toUpperCase();
                 return (
                   <tr
                     key={client.id}
-                    className="border-t border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+                    className={`border-t border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors ${
+                      isThisDeleting ? "opacity-50 pointer-events-none" : ""
+                    }`}
                   >
                     {/* Nome */}
                     <td className="py-4 pl-6 pr-4">
@@ -191,18 +230,18 @@ export function ClientTable({ clients, totalCount, isLoading, isError }: ClientT
                     <td className="py-4 pl-4 pr-6">
                       <div className="flex items-center justify-center gap-1">
                         <button
-                          className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 dark:text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors"
-                          title="Ver detalhes"
-                        >
-                          <Eye size={14} />
-                        </button>
-                        <button
+                          onClick={() => handleEdit(client.id)}
                           className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 dark:text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors"
                           title="Editar"
                         >
                           <Pencil size={14} />
                         </button>
-                        <RowMenu />
+                        <RowMenu
+                          clientId={client.id}
+                          onEdit={() => handleEdit(client.id)}
+                          onDelete={() => handleDelete(client.id, client.name)}
+                          isDeleting={isThisDeleting}
+                        />
                       </div>
                     </td>
                   </tr>

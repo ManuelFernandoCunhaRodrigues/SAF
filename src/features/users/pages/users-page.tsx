@@ -1,40 +1,31 @@
 import { useState } from "react";
-import { Plus, Search, Users, ShieldCheck, UserIcon, SlidersHorizontal, Loader2 } from "lucide-react";
+import { Plus, Search, Users, ShieldCheck, UserIcon, SlidersHorizontal } from "lucide-react";
 import { UserCard } from "../components/user-card";
+import { UserForm } from "../components/user-form";
+import { EditUserForm } from "../components/edit-user-form";
 import { useUsers } from "../hooks/use-users";
+import { useDeleteUser } from "../hooks/use-delete-user";
+import type { User } from "../types/user";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/shared/components/ui/dialog";
 
-type Role = "Admin" | "User";
-
-const AVATAR_COLORS = [
-  "bg-[#2563EB]",
-  "bg-[#1D4ED8]",
-  "bg-[#3B82F6]",
-  "bg-[#1E40AF]",
-  "bg-[#60A5FA]",
-  "bg-[#1E3A8A]",
-];
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase();
-}
-
-function getAvatarColor(name: string): string {
-  let hash = 0;
-  for (const c of name) hash = c.charCodeAt(0) + ((hash << 5) - hash);
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
-}
+type RoleFilter = "Todos" | "Admin" | "User";
 
 export function UsersPage() {
   const { data: users = [], isLoading, isError } = useUsers();
-  const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState<"Todos" | Role>("Todos");
+  const { mutate: deleteUser, isPending: isDeleting, variables: deletingId } = useDeleteUser();
 
-  const admins = users.filter((u) => u.role === "admin").length;
+  const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>("Todos");
+  const [createOpen, setCreateOpen] = useState(false);
+  const [editUser, setEditUser] = useState<User | null>(null);
+
+  const admins  = users.filter((u) => u.role === "admin").length;
   const regular = users.filter((u) => u.role === "user").length;
 
   const STATS = [
@@ -44,13 +35,20 @@ export function UsersPage() {
   ];
 
   const filtered = users.filter((u) => {
+    const q = search.toLowerCase();
     const matchSearch =
-      u.name.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase());
-    const roleLabel: Role = u.role === "admin" ? "Admin" : "User";
+      u.name.toLowerCase().includes(q) ||
+      u.email.toLowerCase().includes(q);
+    const roleLabel: RoleFilter = u.role === "admin" ? "Admin" : "User";
     const matchRole = roleFilter === "Todos" || roleLabel === roleFilter;
     return matchSearch && matchRole;
   });
+
+  function handleDelete(user: User) {
+    if (!window.confirm(`Tem certeza que deseja excluir o usuário "${user.name}"? Esta ação não pode ser desfeita.`))
+      return;
+    deleteUser(user.id);
+  }
 
   return (
     <div className="py-8 space-y-8">
@@ -65,7 +63,10 @@ export function UsersPage() {
             Gerencie os usuários do sistema
           </p>
         </div>
-        <button className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors whitespace-nowrap">
+        <button
+          onClick={() => setCreateOpen(true)}
+          className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors whitespace-nowrap"
+        >
           <Plus size={15} strokeWidth={2.5} />
           Novo Usuário
         </button>
@@ -127,7 +128,7 @@ export function UsersPage() {
       <div className="flex flex-col gap-5">
         {isLoading ? (
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-12 shadow-sm flex flex-col items-center gap-3">
-            <Loader2 size={24} className="text-blue-600 animate-spin" />
+            <div className="w-6 h-6 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
             <p className="text-sm text-zinc-500 dark:text-zinc-400">Carregando usuários...</p>
           </div>
         ) : isError ? (
@@ -139,11 +140,10 @@ export function UsersPage() {
           filtered.map((user) => (
             <UserCard
               key={user.id}
-              name={user.name}
-              email={user.email}
-              role={user.role === "admin" ? "Admin" : "User"}
-              initials={getInitials(user.name)}
-              avatarColor={getAvatarColor(user.name)}
+              user={user}
+              onEdit={() => setEditUser(user)}
+              onDelete={() => handleDelete(user)}
+              isDeleting={isDeleting && deletingId === user.id}
             />
           ))
         ) : (
@@ -162,6 +162,46 @@ export function UsersPage() {
           Exibindo {filtered.length} de {users.length} usuário{users.length !== 1 ? "s" : ""}
         </p>
       )}
+
+      {/* ── Modal: Novo Usuário ── */}
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-zinc-800 dark:text-zinc-100">
+              Novo Usuário
+            </DialogTitle>
+            <DialogDescription className="text-sm text-zinc-500 dark:text-zinc-400">
+              Preencha os dados para cadastrar um novo usuário no sistema.
+            </DialogDescription>
+          </DialogHeader>
+          <UserForm
+            onSuccess={() => setCreateOpen(false)}
+            onCancel={() => setCreateOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Modal: Editar Usuário ── */}
+      <Dialog open={!!editUser} onOpenChange={(open) => { if (!open) setEditUser(null); }}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-zinc-800 dark:text-zinc-100">
+              Editar Usuário
+            </DialogTitle>
+            <DialogDescription className="text-sm text-zinc-500 dark:text-zinc-400">
+              Atualize os dados do usuário.
+            </DialogDescription>
+          </DialogHeader>
+          {editUser && (
+            <EditUserForm
+              key={editUser.id}
+              user={editUser}
+              onSuccess={() => setEditUser(null)}
+              onCancel={() => setEditUser(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
     </div>
   );

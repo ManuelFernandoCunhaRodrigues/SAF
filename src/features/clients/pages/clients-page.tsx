@@ -12,13 +12,18 @@ import {
 } from "@/shared/components/ui/dialog";
 
 export function ClientsPage() {
-  const { data: clients = [], isLoading, isError } = useClients();
+  const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const total     = clients.length;
-  const active    = clients.filter((c) => c.status === "active").length;
-  const inactive  = clients.filter((c) => c.status === "inactive").length;
-  const companies = clients.filter((c) => c.type === "company").length;
+  // Unfiltered — used only for KPI aggregates
+  const { data: allClients = [] } = useClients();
+  // Search-filtered — used for the table
+  const { data: tableClients = [], isLoading, isError } = useClients(search);
+
+  const total     = allClients.length;
+  const active    = allClients.filter((c) => c.status === "active").length;
+  const inactive  = allClients.filter((c) => c.status === "inactive").length;
+  const companies = allClients.filter((c) => c.type === "company").length;
 
   const kpis = [
     {
@@ -109,10 +114,12 @@ export function ClientsPage() {
 
       {/* Tabela */}
       <ClientTable
-        clients={clients}
-        totalCount={total}
+        clients={tableClients}
+        totalCount={tableClients.length}
         isLoading={isLoading}
         isError={isError}
+        search={search}
+        onSearch={setSearch}
       />
 
       {/* Modal de cadastro */}
