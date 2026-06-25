@@ -169,8 +169,8 @@ export function InvoiceForm({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="pending">Pendente</SelectItem>
-                  <SelectItem value="paid">Pago</SelectItem>
+                  <SelectItem value="pending">Enviada</SelectItem>
+                  <SelectItem value="paid">Paga</SelectItem>
                   <SelectItem value="overdue">Vencida</SelectItem>
                   <SelectItem value="cancelled">Cancelada</SelectItem>
                 </SelectContent>
