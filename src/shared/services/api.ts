@@ -19,3 +19,19 @@ api.interceptors.request.use((config) => {
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      localStorage.removeItem("@saf:token");
+      localStorage.removeItem("@saf:user");
+
+      if (window.location.pathname !== "/login") {
+        window.location.assign("/login");
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);

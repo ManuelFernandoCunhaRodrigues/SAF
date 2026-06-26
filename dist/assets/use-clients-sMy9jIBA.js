@@ -1,0 +1,1 @@
+import{t as e}from"./useQuery-BTum4Wy1.js";import{i as t}from"./client-service-Bcz-9C8m.js";function n(n){return e({queryKey:[`clients`,n||`all`],queryFn:()=>t(n)})}export{n as t};

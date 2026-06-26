@@ -1,13 +1,10 @@
 import { Bell, Link2, Zap, Moon, Sun } from "lucide-react";
 import { useTheme } from "@/shared/context/theme-context";
+import { useAuthContext } from "@/app/providers/use-auth";
 
 export function PainelHeader() {
   const { theme, toggleTheme } = useTheme();
-
-  const user = {
-    name: "Vinicius Morais",
-    role: "admin",
-  };
+  const { user } = useAuthContext();
 
   return (
     <header className="h-16 border-b border-zinc-100 dark:border-[#27272A] bg-white dark:bg-[#09090B] flex items-center justify-between px-6 shrink-0 transition-colors duration-200">
