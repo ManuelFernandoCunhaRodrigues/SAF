@@ -1,8 +1,9 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle2, Users } from "lucide-react";
 
 import { invoiceSchema, type InvoiceFormData } from "../schemas/invoice-schema";
+import { useClients } from "@/features/clients/hooks/use-clients";
 
 import {
   Form,
@@ -41,11 +42,12 @@ export function InvoiceForm({
   onCancel,
   submitLabel = "Salvar",
 }: InvoiceFormProps) {
+  const { data: clients = [], isLoading: loadingClients } = useClients();
+
   const form = useForm<InvoiceFormData>({
     resolver: zodResolver(invoiceSchema),
     defaultValues: {
-      clientName: "",
-      clientEmail: "",
+      clientId: "",
       amount: 0,
       dueDate: "",
       status: "pending",
@@ -53,39 +55,56 @@ export function InvoiceForm({
     },
   });
 
+  const noClients = !loadingClients && clients.length === 0;
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
 
-        {/* Nome do cliente */}
+        {/* Cliente */}
         <FormField
           control={form.control}
-          name="clientName"
+          name="clientId"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                Nome do cliente <span className="text-red-500">*</span>
+                Cliente <span className="text-red-500">*</span>
               </FormLabel>
-              <FormControl>
-                <Input placeholder="Nome completo do cliente" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* E-mail do cliente */}
-        <FormField
-          control={form.control}
-          name="clientEmail"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                E-mail do cliente <span className="text-red-500">*</span>
-              </FormLabel>
-              <FormControl>
-                <Input type="email" placeholder="cliente@email.com" {...field} />
-              </FormControl>
+              <Select
+                onValueChange={field.onChange}
+                value={field.value}
+                disabled={loadingClients || noClients}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue
+                      placeholder={
+                        loadingClients
+                          ? "Carregando clientes..."
+                          : noClients
+                          ? "Nenhum cliente disponível"
+                          : "Selecione um cliente"
+                      }
+                    />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {clients.map((client) => (
+                    <SelectItem key={client.id} value={client.id}>
+                      {client.name}
+                      {client.email && (
+                        <span className="text-zinc-400 ml-1.5 text-xs">— {client.email}</span>
+                      )}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {noClients && (
+                <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 mt-1">
+                  <Users size={12} />
+                  Nenhum cliente cadastrado. Cadastre um cliente antes de criar uma fatura.
+                </div>
+              )}
               <FormMessage />
             </FormItem>
           )}
@@ -150,8 +169,8 @@ export function InvoiceForm({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="pending">Pendente</SelectItem>
-                  <SelectItem value="paid">Pago</SelectItem>
+                  <SelectItem value="pending">Enviada</SelectItem>
+                  <SelectItem value="paid">Paga</SelectItem>
                   <SelectItem value="overdue">Vencida</SelectItem>
                   <SelectItem value="cancelled">Cancelada</SelectItem>
                 </SelectContent>
@@ -192,7 +211,7 @@ export function InvoiceForm({
           </Button>
           <Button
             type="submit"
-            disabled={isSubmitting || isSuccess}
+            disabled={isSubmitting || isSuccess || noClients}
             className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
           >
             {isSubmitting ? (

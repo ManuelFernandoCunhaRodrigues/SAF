@@ -2,13 +2,15 @@ import { useState } from "react";
 import {
   Plus, Search, SlidersHorizontal, TrendingUp,
   Eye, MessageCircle, MoreHorizontal,
-  Pencil, Copy, FileText, Printer, Trash2,
+  Pencil, Trash2, FileText,
   DollarSign, CheckCircle, Clock, AlertTriangle, Loader2,
+  Send, BadgeDollarSign, CalendarX,
 } from "lucide-react";
 
 import { useInvoices } from "../hooks/use-invoices";
 import { useCreateInvoice } from "../hooks/use-create-invoice";
 import { useUpdateInvoice } from "../hooks/use-update-invoice";
+import { useUpdateInvoiceStatus } from "../hooks/use-update-invoice-status";
 import { useDeleteInvoice } from "../hooks/use-delete-invoice";
 import { InvoiceForm } from "../components/invoice-form";
 import type { Invoice, InvoiceStatus } from "../types/invoice";
@@ -31,10 +33,10 @@ function formatDate(dateStr: string) {
 }
 
 const STATUS_CFG: Record<InvoiceStatus, { label: string; dot: string; bg: string; text: string }> = {
-  paid:      { label: "Pago",      dot: "bg-[#3B82F6]",  bg: "bg-blue-50 dark:bg-[#3B82F6]/10",   text: "text-blue-500 dark:text-[#60A5FA]" },
-  pending:   { label: "Pendente",  dot: "bg-[#93C5FD]",  bg: "bg-blue-50 dark:bg-[#93C5FD]/10",   text: "text-blue-300 dark:text-[#93C5FD]" },
-  overdue:   { label: "Vencida",   dot: "bg-[#EF4444]",  bg: "bg-red-50 dark:bg-[#EF4444]/10",    text: "text-red-500 dark:text-[#EF4444]" },
-  cancelled: { label: "Cancelada", dot: "bg-zinc-400",   bg: "bg-zinc-100 dark:bg-zinc-800",      text: "text-zinc-500 dark:text-zinc-400" },
+  paid:      { label: "Paga",     dot: "bg-[#3B82F6]",  bg: "bg-blue-50 dark:bg-[#3B82F6]/10",   text: "text-blue-500 dark:text-[#60A5FA]" },
+  pending:   { label: "Enviada",  dot: "bg-[#93C5FD]",  bg: "bg-blue-50 dark:bg-[#93C5FD]/10",   text: "text-blue-300 dark:text-[#93C5FD]" },
+  overdue:   { label: "Vencida",  dot: "bg-[#EF4444]",  bg: "bg-red-50 dark:bg-[#EF4444]/10",    text: "text-red-500 dark:text-[#EF4444]" },
+  cancelled: { label: "Cancelada",dot: "bg-zinc-400",   bg: "bg-zinc-100 dark:bg-zinc-800",      text: "text-zinc-500 dark:text-zinc-400" },
 };
 
 function StatusBadge({ status }: { status: InvoiceStatus }) {
@@ -53,51 +55,72 @@ type RowMenuProps = {
   onEdit: (invoice: Invoice) => void;
   onDelete: (id: string) => void;
   isDeleting: boolean;
+  onStatusChange: (id: string, status: InvoiceStatus) => void;
+  isChangingStatus: boolean;
 };
 
-function RowMenu({ invoice, onEdit, onDelete, isDeleting }: RowMenuProps) {
+function RowMenu({ invoice, onEdit, onDelete, isDeleting, onStatusChange, isChangingStatus }: RowMenuProps) {
   const [open, setOpen] = useState(false);
 
-  function handleEdit() {
-    setOpen(false);
-    onEdit(invoice);
-  }
-
-  function handleDelete() {
-    setOpen(false);
-    onDelete(invoice.id);
-  }
+  function handleEdit() { setOpen(false); onEdit(invoice); }
+  function handleDelete() { setOpen(false); onDelete(invoice.id); }
+  function handleStatus(status: InvoiceStatus) { setOpen(false); onStatusChange(invoice.id, status); }
 
   return (
     <div className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        disabled={isDeleting}
+        disabled={isDeleting || isChangingStatus}
         className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
       >
-        <MoreHorizontal size={15} />
+        {isChangingStatus
+          ? <Loader2 size={14} className="animate-spin" />
+          : <MoreHorizontal size={15} />}
       </button>
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full mt-1.5 w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-lg z-20 overflow-hidden py-1">
-            <button className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-2.5 transition-colors text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800">
-              <Eye size={13} className="text-zinc-400 dark:text-zinc-500" /> Ver detalhes
-            </button>
+          <div className="absolute right-0 top-full mt-1.5 w-52 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-lg z-20 overflow-hidden py-1">
+
             <button
               onClick={handleEdit}
               className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-2.5 transition-colors text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800"
             >
               <Pencil size={13} className="text-zinc-400 dark:text-zinc-500" /> Editar fatura
             </button>
-            <button className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-2.5 transition-colors text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800">
-              <Copy size={13} className="text-zinc-400 dark:text-zinc-500" /> Copiar Pix
-            </button>
-            <button className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-2.5 transition-colors text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800">
-              <FileText size={13} className="text-zinc-400 dark:text-zinc-500" /> Gerar boleto
-            </button>
-            <button className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-2.5 transition-colors text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800">
-              <Printer size={13} className="text-zinc-400 dark:text-zinc-500" /> Imprimir
+
+            {/* ── Alteração rápida de status ── */}
+            {invoice.status !== "pending" && (
+              <button
+                onClick={() => handleStatus("pending")}
+                className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-2.5 transition-colors text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+              >
+                <Send size={13} className="text-blue-400" /> Marcar como Enviada
+              </button>
+            )}
+            {invoice.status !== "paid" && (
+              <button
+                onClick={() => handleStatus("paid")}
+                className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-2.5 transition-colors text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+              >
+                <BadgeDollarSign size={13} className="text-blue-500" /> Marcar como Paga
+              </button>
+            )}
+            {invoice.status !== "overdue" && (
+              <button
+                onClick={() => handleStatus("overdue")}
+                className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-2.5 transition-colors text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+              >
+                <CalendarX size={13} className="text-red-400" /> Marcar como Vencida
+              </button>
+            )}
+
+            <div className="my-1 border-t border-zinc-100 dark:border-zinc-800" />
+            <button
+              onClick={() => { setOpen(false); }}
+              className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-2.5 transition-colors text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+            >
+              <Eye size={13} className="text-zinc-400 dark:text-zinc-500" /> Ver detalhes
             </button>
             <button
               onClick={handleDelete}
@@ -115,11 +138,11 @@ function RowMenu({ invoice, onEdit, onDelete, isDeleting }: RowMenuProps) {
 /* ─── página principal ─── */
 export function InvoicesPage() {
   const [search, setSearch]           = useState("");
-  const [statusFilter, setStatus]     = useState<"Todos" | InvoiceStatus>("Todos");
+  const [statusFilter, setStatus]     = useState<"Todas" | InvoiceStatus>("Todas");
   const [createOpen, setCreateOpen]   = useState(false);
   const [editInvoice, setEditInvoice] = useState<Invoice | null>(null);
 
-  const activeStatus = statusFilter !== "Todos" ? statusFilter as InvoiceStatus : undefined;
+  const activeStatus = statusFilter !== "Todas" ? statusFilter as InvoiceStatus : undefined;
 
   const { data: allInvoices = [] }                        = useInvoices();
   const { data: statusFiltered = [], isLoading, isError } = useInvoices(activeStatus);
@@ -132,6 +155,7 @@ export function InvoicesPage() {
   /* mutations */
   const createMutation = useCreateInvoice();
   const updateMutation = useUpdateInvoice(editInvoice?.id ?? "");
+  const statusMutation = useUpdateInvoiceStatus();
   const deleteMutation = useDeleteInvoice();
 
   /* handlers */
@@ -148,6 +172,10 @@ export function InvoicesPage() {
     updateMutation.mutate(data, {
       onSuccess: () => setTimeout(() => setEditInvoice(null), 1200),
     });
+  }
+
+  function handleStatusChange(id: string, status: InvoiceStatus) {
+    statusMutation.mutate({ id, status });
   }
 
   function handleDelete(id: string) {
@@ -180,11 +208,10 @@ export function InvoicesPage() {
   /* defaultValues para edição — dueDate precisa ser yyyy-mm-dd para input[type=date] */
   const editDefaultValues = editInvoice
     ? {
-        clientName:  editInvoice.clientName,
-        clientEmail: editInvoice.clientEmail,
-        amount:      editInvoice.amount,
-        dueDate:     editInvoice.dueDate.slice(0, 10),
-        status:      editInvoice.status,
+        clientId: editInvoice.clientId ?? "",
+        amount:   editInvoice.amount,
+        dueDate:  editInvoice.dueDate.slice(0, 10),
+        status:   editInvoice.status,
       }
     : undefined;
 
@@ -209,10 +236,10 @@ export function InvoicesPage() {
       {/* ── KPIs ── */}
       <div className="grid grid-cols-4 gap-4">
         {[
-          { label: "Total em Faturas",  value: total,   sub: isLoading ? "Carregando faturas" : `${allInvoices.length} faturas cadastradas`,               Icon: TrendingUp,    iBg: "bg-blue-50 dark:bg-[#2563EB]/10",  iC: "text-blue-600 dark:text-[#3B82F6]",  vC: "text-zinc-800 dark:text-zinc-100" },
-          { label: "Faturas Pagas",     value: paid,    sub: `${paidCount} fatura${paidCount !== 1 ? "s" : ""} confirmada${paidCount !== 1 ? "s" : ""}`,   Icon: CheckCircle,   iBg: "bg-blue-50 dark:bg-[#3B82F6]/10",  iC: "text-blue-500 dark:text-[#60A5FA]",  vC: "text-blue-500 dark:text-[#60A5FA]" },
-          { label: "Faturas Pendentes", value: pending, sub: `${pendingCount} aguardando pagamento`,                                                        Icon: Clock,         iBg: "bg-blue-50 dark:bg-[#93C5FD]/10",  iC: "text-blue-300 dark:text-[#93C5FD]",  vC: "text-blue-300 dark:text-[#93C5FD]" },
-          { label: "Faturas Vencidas",  value: overdue, sub: `${overdueCount} fatura${overdueCount !== 1 ? "s" : ""} em atraso`,                           Icon: AlertTriangle, iBg: "bg-red-50 dark:bg-[#EF4444]/10",   iC: "text-red-500 dark:text-[#EF4444]",   vC: "text-red-500 dark:text-[#EF4444]" },
+          { label: "Total em Faturas",   value: total,   sub: isLoading ? "Carregando faturas" : `${allInvoices.length} faturas cadastradas`,              Icon: TrendingUp,    iBg: "bg-blue-50 dark:bg-[#2563EB]/10",  iC: "text-blue-600 dark:text-[#3B82F6]",  vC: "text-zinc-800 dark:text-zinc-100" },
+          { label: "Faturas Pagas",      value: paid,    sub: `${paidCount} fatura${paidCount !== 1 ? "s" : ""} confirmada${paidCount !== 1 ? "s" : ""}`,  Icon: CheckCircle,   iBg: "bg-blue-50 dark:bg-[#3B82F6]/10",  iC: "text-blue-500 dark:text-[#60A5FA]",  vC: "text-blue-500 dark:text-[#60A5FA]" },
+          { label: "Faturas Enviadas",   value: pending, sub: `${pendingCount} aguardando pagamento`,                                                       Icon: Clock,         iBg: "bg-blue-50 dark:bg-[#93C5FD]/10",  iC: "text-blue-300 dark:text-[#93C5FD]",  vC: "text-blue-300 dark:text-[#93C5FD]" },
+          { label: "Faturas Vencidas",   value: overdue, sub: `${overdueCount} fatura${overdueCount !== 1 ? "s" : ""} em atraso`,                          Icon: AlertTriangle, iBg: "bg-red-50 dark:bg-[#EF4444]/10",   iC: "text-red-500 dark:text-[#EF4444]",   vC: "text-red-500 dark:text-[#EF4444]" },
         ].map((k) => {
           const Icon = k.Icon;
           return (
@@ -254,11 +281,11 @@ export function InvoicesPage() {
             <div className="flex items-center gap-0.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-1">
               <SlidersHorizontal size={12} className="text-zinc-400 dark:text-zinc-500 mx-1.5" />
               {([
-                { value: "Todos",     label: "Todos" },
-                { value: "paid",      label: "Pago" },
-                { value: "pending",   label: "Pendente" },
-                { value: "overdue",   label: "Vencida" },
-                { value: "cancelled", label: "Cancelada" },
+                { value: "Todas",     label: "Todas" },
+                { value: "paid",      label: "Pagas" },
+                { value: "pending",   label: "Enviadas" },
+                { value: "overdue",   label: "Vencidas" },
+                { value: "cancelled", label: "Canceladas" },
               ] as const).map((f) => (
                 <button
                   key={f.value}
@@ -313,67 +340,72 @@ export function InvoicesPage() {
                 </td>
               </tr>
             ) : filtered.length > 0 ? (
-              filtered.map((inv) => (
-                <tr
-                  key={inv.id}
-                  className={`border-t border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors ${
-                    deleteMutation.isPending ? "opacity-60 pointer-events-none" : ""
-                  }`}
-                >
-                  <td className="py-4 pl-6 pr-4">
-                    <span className="text-xs font-bold text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-md font-mono">
-                      #{inv.number}
-                    </span>
-                  </td>
-                  <td className="py-4 px-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                        <DollarSign size={13} className="text-blue-600 dark:text-blue-400" />
+              filtered.map((inv) => {
+                const isChangingThisStatus = statusMutation.isPending && statusMutation.variables?.id === inv.id;
+                return (
+                  <tr
+                    key={inv.id}
+                    className={`border-t border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors ${
+                      (deleteMutation.isPending || isChangingThisStatus) ? "opacity-60 pointer-events-none" : ""
+                    }`}
+                  >
+                    <td className="py-4 pl-6 pr-4">
+                      <span className="text-xs font-bold text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-md font-mono">
+                        #{inv.number}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                          <DollarSign size={13} className="text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{inv.clientName}</p>
+                          <p className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5">{inv.clientEmail ?? ""}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{inv.clientName}</p>
-                        <p className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5">{inv.clientEmail}</p>
+                    </td>
+                    <td className="py-4 px-4">
+                      <p className="text-sm font-bold text-zinc-800 dark:text-zinc-100">{formatCurrency(inv.amount)}</p>
+                    </td>
+                    <td className="py-4 px-4">
+                      <StatusBadge status={inv.status} />
+                    </td>
+                    <td className="py-4 px-4">
+                      <p className={`text-sm font-medium ${inv.status === "overdue" ? "text-red-500 dark:text-[#EF4444]" : "text-zinc-600 dark:text-zinc-300"}`}>
+                        {formatDate(inv.dueDate)}
+                      </p>
+                    </td>
+                    <td className="py-4 px-4">
+                      <p className="text-sm text-zinc-400 dark:text-zinc-500">{formatDate(inv.createdAt)}</p>
+                    </td>
+                    <td className="py-4 pl-4 pr-6">
+                      <div className="flex items-center justify-center gap-1">
+                        <button
+                          className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 dark:text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors"
+                          title="Ver detalhes"
+                        >
+                          <Eye size={14} />
+                        </button>
+                        <button
+                          className="w-8 h-8 rounded-lg flex items-center justify-center text-[#3B82F6] hover:bg-[#3B82F6]/10 transition-colors"
+                          title="Enviar via WhatsApp"
+                        >
+                          <MessageCircle size={14} />
+                        </button>
+                        <RowMenu
+                          invoice={inv}
+                          onEdit={setEditInvoice}
+                          onDelete={handleDelete}
+                          isDeleting={deleteMutation.isPending}
+                          onStatusChange={handleStatusChange}
+                          isChangingStatus={isChangingThisStatus}
+                        />
                       </div>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4">
-                    <p className="text-sm font-bold text-zinc-800 dark:text-zinc-100">{formatCurrency(inv.amount)}</p>
-                  </td>
-                  <td className="py-4 px-4">
-                    <StatusBadge status={inv.status} />
-                  </td>
-                  <td className="py-4 px-4">
-                    <p className={`text-sm font-medium ${inv.status === "overdue" ? "text-red-500 dark:text-[#EF4444]" : "text-zinc-600 dark:text-zinc-300"}`}>
-                      {formatDate(inv.dueDate)}
-                    </p>
-                  </td>
-                  <td className="py-4 px-4">
-                    <p className="text-sm text-zinc-400 dark:text-zinc-500">{formatDate(inv.createdAt)}</p>
-                  </td>
-                  <td className="py-4 pl-4 pr-6">
-                    <div className="flex items-center justify-center gap-1">
-                      <button
-                        className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 dark:text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors"
-                        title="Ver detalhes"
-                      >
-                        <Eye size={14} />
-                      </button>
-                      <button
-                        className="w-8 h-8 rounded-lg flex items-center justify-center text-[#3B82F6] hover:bg-[#3B82F6]/10 transition-colors"
-                        title="Enviar via WhatsApp"
-                      >
-                        <MessageCircle size={14} />
-                      </button>
-                      <RowMenu
-                        invoice={inv}
-                        onEdit={setEditInvoice}
-                        onDelete={handleDelete}
-                        isDeleting={deleteMutation.isPending}
-                      />
-                    </div>
-                  </td>
-                </tr>
-              ))
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
               <tr>
                 <td colSpan={7} className="py-16 text-center">

@@ -2,8 +2,10 @@ import { api } from "@/shared/services/api";
 import type { ApiResponse } from "@/shared/types/global";
 import type { Client, CreateClientData, UpdateClientData } from "../types/client";
 
-export async function getClients(): Promise<Client[]> {
-  const response = await api.get<ApiResponse<Client[]>>("/clients");
+export async function getClients(search?: string): Promise<Client[]> {
+  const response = await api.get<ApiResponse<Client[]>>("/clients", {
+    params: search ? { search } : undefined,
+  });
   return response.data.data;
 }
 
