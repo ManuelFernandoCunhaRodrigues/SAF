@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   User, Mail, Shield, Lock, Eye, EyeOff,
-  Save, KeyRound, Info, CheckCircle,
+  Save, KeyRound, Info,
 } from "lucide-react";
 import { useAuthContext } from "@/app/providers/use-auth";
 
@@ -78,21 +78,9 @@ const C = "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800
 /* ─── página principal ─── */
 export function SettingsPage() {
   const { user } = useAuthContext();
-  const [saved, setSaved] = useState(false);
-  const [passwordSaved, setPasswordSaved] = useState(false);
 
   const initial = user?.name?.charAt(0).toUpperCase() ?? "U";
   const role    = user?.role === "admin" ? "Administrador" : "Usuário";
-
-  function handleSave() {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
-  }
-
-  function handlePasswordSave() {
-    setPasswordSaved(true);
-    setTimeout(() => setPasswordSaved(false), 2500);
-  }
 
   return (
     <div className="py-8 max-w-3xl space-y-6">
@@ -148,17 +136,14 @@ export function SettingsPage() {
         {/* Botão */}
         <div className="flex items-center gap-3 mt-6">
           <button
-            onClick={handleSave}
-            className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-all duration-200"
+            type="button"
+            disabled
+            className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl shadow-sm cursor-not-allowed opacity-50"
+            title="Funcionalidade em desenvolvimento"
           >
-            {saved ? <CheckCircle size={15} /> : <Save size={15} />}
-            {saved ? "Salvo!" : "Salvar alterações"}
+            <Save size={15} />
+            Salvar alterações (em desenvolvimento)
           </button>
-          {saved && (
-            <p className="text-xs text-[#60A5FA] font-medium">
-              Alterações salvas com sucesso.
-            </p>
-          )}
         </div>
       </div>
 
@@ -181,17 +166,14 @@ export function SettingsPage() {
 
         <div className="flex items-center gap-3 mt-6">
           <button
-            onClick={handlePasswordSave}
-            className="flex items-center gap-2 px-5 py-2.5 bg-zinc-800 dark:bg-zinc-700 hover:bg-zinc-900 dark:hover:bg-zinc-600 text-white text-sm font-semibold rounded-xl shadow-sm transition-all duration-200"
+            type="button"
+            disabled
+            className="flex items-center gap-2 px-5 py-2.5 bg-zinc-800 dark:bg-zinc-700 text-white text-sm font-semibold rounded-xl shadow-sm cursor-not-allowed opacity-50"
+            title="Funcionalidade em desenvolvimento"
           >
-            {passwordSaved ? <CheckCircle size={15} /> : <KeyRound size={15} />}
-            {passwordSaved ? "Atualizado!" : "Atualizar senha"}
+            <KeyRound size={15} />
+            Atualizar senha (em desenvolvimento)
           </button>
-          {passwordSaved && (
-            <p className="text-xs text-[#60A5FA] font-medium">
-              Senha atualizada com sucesso.
-            </p>
-          )}
         </div>
       </div>
 

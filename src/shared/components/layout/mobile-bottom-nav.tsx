@@ -11,20 +11,21 @@ import { cn } from "@/shared/lib/utils";
 import { useAuthContext } from "@/app/providers/use-auth";
 
 const PRIMARY_ITEMS = [
-  { label: "Dashboard", href: "/painel/dashboard",   icon: LayoutDashboard },
-  { label: "Usuários",  href: "/painel/usuarios",    icon: Users },
-  { label: "Faturas",   href: "/painel/faturas",     icon: FileText },
-  { label: "Clientes",  href: "/painel/clientes",    icon: UserCheck },
-  { label: "Config.",   href: "/painel/configuracoes", icon: Settings },
+  { label: "Dashboard", href: "/painel/dashboard",     icon: LayoutDashboard, adminOnly: false },
+  { label: "Usuários",  href: "/painel/usuarios",      icon: Users,           adminOnly: true  },
+  { label: "Faturas",   href: "/painel/faturas",       icon: FileText,        adminOnly: false },
+  { label: "Clientes",  href: "/painel/clientes",      icon: UserCheck,       adminOnly: false },
+  { label: "Config.",   href: "/painel/configuracoes", icon: Settings,        adminOnly: false },
 ];
 
 export function MobileBottomNav() {
   const location = useLocation();
-  const { logout } = useAuthContext();
+  const { user, logout } = useAuthContext();
+  const isAdmin = user?.role === "admin";
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t border-zinc-200 bg-white flex items-center justify-around h-16 z-40">
-      {PRIMARY_ITEMS.map((item) => {
+      {PRIMARY_ITEMS.filter((item) => !item.adminOnly || isAdmin).map((item) => {
         const Icon = item.icon;
         const isActive = location.pathname === item.href;
 

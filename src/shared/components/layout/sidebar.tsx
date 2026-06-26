@@ -10,24 +10,22 @@ import {
   UserCheck,
 } from "lucide-react";
 import { useSidebarContext } from "@/shared/context/use-sidebar";
+import { useAuthContext } from "@/app/providers/use-auth";
 import { cn } from "@/shared/lib/utils";
 
 const NAV_ITEMS = [
-  { label: "Dashboard",     href: "/painel/dashboard",      icon: LayoutDashboard },
-  { label: "Usuários",      href: "/painel/usuarios",        icon: Users },
-  { label: "Faturas",       href: "/painel/faturas",         icon: FileText },
-  { label: "Clientes",      href: "/painel/clientes",        icon: UserCheck },
-  { label: "Configurações", href: "/painel/configuracoes",   icon: Settings },
+  { label: "Dashboard",     href: "/painel/dashboard",      icon: LayoutDashboard, adminOnly: false },
+  { label: "Usuários",      href: "/painel/usuarios",        icon: Users,           adminOnly: true  },
+  { label: "Faturas",       href: "/painel/faturas",         icon: FileText,        adminOnly: false },
+  { label: "Clientes",      href: "/painel/clientes",        icon: UserCheck,       adminOnly: false },
+  { label: "Configurações", href: "/painel/configuracoes",   icon: Settings,        adminOnly: false },
 ];
 
 export function Sidebar() {
   const { isExpanded, setIsExpanded } = useSidebarContext();
   const location = useLocation();
-
-  const user = {
-    name: "Vinicius Morais",
-    email: "vinicius123morais@gmail.com",
-  };
+  const { user, logout } = useAuthContext();
+  const isAdmin = user?.role === "admin";
 
   return (
     <aside
@@ -60,7 +58,7 @@ export function Sidebar() {
 
       {/* Nav */}
       <nav className="flex-1 p-3 space-y-1 overflow-hidden">
-        {NAV_ITEMS.map((item) => {
+        {NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin).map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.href;
           return (
@@ -104,7 +102,7 @@ export function Sidebar() {
           )}
         </div>
         <button
-          onClick={() => console.log("Logout")}
+          onClick={logout}
           title={!isExpanded ? "Sair da conta" : undefined}
           className={cn(
             "w-full text-sm text-zinc-600 dark:text-[#64748B] hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors",
