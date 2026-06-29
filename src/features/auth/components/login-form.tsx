@@ -20,6 +20,7 @@ export function LoginForm() {
   const { login } = useAuthContext();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -28,11 +29,12 @@ export function LoginForm() {
 
   async function onSubmit(data: LoginFormData) {
     setIsLoading(true);
+    setErrorMessage(null);
     try {
       await login(data);
       navigate("/painel/dashboard");
     } catch {
-      // Silently fail - no error display
+      setErrorMessage("Não foi possível entrar. Verifique seu e-mail e senha e tente novamente.");
     } finally {
       setIsLoading(false);
     }
@@ -68,6 +70,12 @@ export function LoginForm() {
             </FormItem>
           )}
         />
+
+        {errorMessage && (
+          <p role="alert" className="text-sm text-red-500 dark:text-red-400">
+            {errorMessage}
+          </p>
+        )}
 
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? "Entrando..." : "Entrar"}

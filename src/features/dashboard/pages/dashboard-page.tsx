@@ -128,8 +128,10 @@ function RecentInvoicesSection() {
 }
 
 /* ─── Gráfico de desempenho ─── */
-const chartTooltipFormatter = (value: number) =>
-  value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const chartTooltipFormatter = (value: number | string | readonly (number | string)[] | undefined): string => {
+  const n = Number(Array.isArray(value) ? value[0] : (value ?? 0));
+  return Number.isFinite(n) ? n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "—";
+};
 
 function PerformanceChart() {
   const { data, isLoading, isError } = useDashboardChart();

@@ -1,1 +1,0 @@
-import{t as e}from"./useQuery-Debl9tEV.js";import{i as t}from"./client-service-BhoK2R2D.js";function n(n){return e({queryKey:[`clients`,n||`all`],queryFn:()=>t(n)})}export{n as t};
