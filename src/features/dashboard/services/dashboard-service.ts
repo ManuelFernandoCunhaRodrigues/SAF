@@ -1,5 +1,7 @@
 import { api } from "@/shared/services/api";
 
+// ─── Stats ────────────────────────────────────────────────────────────────────
+
 export type DashboardStats = {
   totalUsers: number;
   totalInvoices: number;
@@ -34,4 +36,34 @@ function mapDashboardStats(data: DashboardStatsApiResponse | null): DashboardSta
 export async function getDashboardStats(): Promise<DashboardStats> {
   const response = await api.get<DashboardStatsApiResponse | null>("/dashboard/stats");
   return mapDashboardStats(response.data);
+}
+
+// ─── Cobranças recentes ───────────────────────────────────────────────────────
+
+export type RecentInvoice = {
+  id: string;
+  number: string;
+  clientName: string;
+  amount: number | string;
+  status: string;
+  dueDate: string;
+};
+
+export async function getDashboardRecentInvoices(): Promise<RecentInvoice[]> {
+  const response = await api.get<RecentInvoice[]>("/invoices");
+  return response.data.slice(0, 5);
+}
+
+// ─── Gráfico mensal ───────────────────────────────────────────────────────────
+
+export type DashboardChartItem = {
+  month: string;
+  received: number;
+  pending: number;
+  overdue: number;
+};
+
+export async function getDashboardChart(): Promise<DashboardChartItem[]> {
+  const response = await api.get<DashboardChartItem[]>("/dashboard/chart");
+  return response.data;
 }
