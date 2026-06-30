@@ -4,7 +4,7 @@ import {
   Eye, MessageCircle, MoreHorizontal,
   Pencil, Trash2, FileText,
   DollarSign, CheckCircle, Clock, AlertTriangle, Loader2,
-  Send, BadgeDollarSign, CalendarX,
+  Send, BadgeDollarSign, CalendarX, QrCode,
 } from "lucide-react";
 
 import { useInvoices } from "../hooks/use-invoices";
@@ -12,7 +12,9 @@ import { useCreateInvoice } from "../hooks/use-create-invoice";
 import { useUpdateInvoice } from "../hooks/use-update-invoice";
 import { useUpdateInvoiceStatus } from "../hooks/use-update-invoice-status";
 import { useDeleteInvoice } from "../hooks/use-delete-invoice";
+import { useGenerateInvoicePix } from "../hooks/use-generate-invoice-pix";
 import { InvoiceForm } from "../components/invoice-form";
+import { InvoicePixDialog } from "../components/invoice-pix-dialog";
 import type { Invoice, InvoiceStatus } from "../types/invoice";
 import type { InvoiceFormData } from "../schemas/invoice-schema";
 
@@ -141,6 +143,7 @@ export function InvoicesPage() {
   const [statusFilter, setStatus]     = useState<"Todas" | InvoiceStatus>("Todas");
   const [createOpen, setCreateOpen]   = useState(false);
   const [editInvoice, setEditInvoice] = useState<Invoice | null>(null);
+  const [pixInvoice, setPixInvoice]   = useState<Invoice | null>(null);
 
   const activeStatus = statusFilter !== "Todas" ? statusFilter as InvoiceStatus : undefined;
 
@@ -157,6 +160,7 @@ export function InvoicesPage() {
   const updateMutation = useUpdateInvoice(editInvoice?.id ?? "");
   const statusMutation = useUpdateInvoiceStatus();
   const deleteMutation = useDeleteInvoice();
+  const pixMutation    = useGenerateInvoicePix();
 
   /* handlers */
   function handleCreate(data: InvoiceFormData) {
@@ -192,6 +196,18 @@ export function InvoicesPage() {
     if (!open) {
       setEditInvoice(null);
       updateMutation.reset();
+    }
+  }
+
+  function handleOpenPix(invoice: Invoice) {
+    pixMutation.reset();
+    setPixInvoice(invoice);
+  }
+
+  function handleClosePix(open: boolean) {
+    if (!open) {
+      setPixInvoice(null);
+      pixMutation.reset();
     }
   }
 
@@ -382,6 +398,14 @@ export function InvoicesPage() {
                     <td className="py-4 pl-4 pr-6">
                       <div className="flex items-center justify-center gap-1">
                         <button
+                          onClick={() => handleOpenPix(inv)}
+                          disabled={inv.status === "cancelled"}
+                          className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 dark:text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                          title={inv.status === "cancelled" ? "Fatura cancelada" : "Gerar Pix"}
+                        >
+                          <QrCode size={14} />
+                        </button>
+                        <button
                           className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 dark:text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors"
                           title="Ver detalhes"
                         >
@@ -465,6 +489,19 @@ export function InvoicesPage() {
           />
         </DialogContent>
       </Dialog>
+
+      {/* ── Dialog: Pix ── */}
+      {pixInvoice && (
+        <InvoicePixDialog
+          open={!!pixInvoice}
+          onOpenChange={handleClosePix}
+          invoice={pixInvoice}
+          pixData={pixMutation.data ?? null}
+          isLoading={pixMutation.isPending}
+          errorMessage={pixMutation.errorMessage}
+          onGeneratePix={() => pixMutation.mutate(pixInvoice.id)}
+        />
+      )}
 
       {/* ── Dialog: Editar Fatura ── */}
       <Dialog open={!!editInvoice} onOpenChange={handleCloseEdit}>

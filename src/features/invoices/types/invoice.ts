@@ -38,3 +38,12 @@ export type UpdateInvoiceData = Partial<{
   status: InvoiceStatus;
   dueDate: string;
 }>;
+
+export type InvoicePixData = {
+  invoiceId: string;
+  txid: string;
+  pixCopyPaste: string;
+  qrCodeImage: string;
+  amount: number;
+  expiresAt: string | null;
+};
