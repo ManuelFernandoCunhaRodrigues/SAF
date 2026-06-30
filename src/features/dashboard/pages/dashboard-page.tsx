@@ -1,7 +1,7 @@
 import { useAuthContext } from "@/app/providers/use-auth";
 import { useDashboardStats, useRecentInvoices, useDashboardChart } from "../hooks/use-dashboard";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
 import {
   Calendar,
@@ -152,7 +152,7 @@ function PerformanceChart() {
 
       {!isLoading && !isError && data && (
         <ResponsiveContainer width="100%" height={200}>
-          <BarChart data={data} barSize={10} barGap={3}>
+          <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-zinc-100 dark:text-zinc-800" vertical={false} />
             <XAxis
               dataKey="month"
@@ -161,14 +161,7 @@ function PerformanceChart() {
               axisLine={false}
               tickLine={false}
             />
-            <YAxis
-              tick={{ fontSize: 11, fill: "currentColor" }}
-              className="text-zinc-400 dark:text-zinc-500"
-              axisLine={false}
-              tickLine={false}
-              tickFormatter={(v: number) => `R$${(v / 1000).toFixed(0)}k`}
-              width={48}
-            />
+            <YAxis hide />
             <Tooltip
               formatter={chartTooltipFormatter}
               labelClassName="font-semibold text-zinc-700"
@@ -178,16 +171,26 @@ function PerformanceChart() {
                 fontSize: "12px",
               }}
             />
-            <Legend
-              wrapperStyle={{ fontSize: "11px", paddingTop: "12px" }}
-              formatter={(value) =>
-                value === "received" ? "Recebido" : value === "pending" ? "Pendente" : "Atrasado"
-              }
+            <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "12px" }} />
+            <Line
+              type="monotone"
+              dataKey="received"
+              name="Cobranças"
+              stroke="#3B82F6"
+              strokeWidth={2}
+              dot={{ r: 4, fill: "#3B82F6", strokeWidth: 0 }}
+              activeDot={{ r: 6 }}
             />
-            <Bar dataKey="received" fill="#3B82F6" radius={[4, 4, 0, 0]} name="received" />
-            <Bar dataKey="pending"  fill="#F59E0B" radius={[4, 4, 0, 0]} name="pending" />
-            <Bar dataKey="overdue"  fill="#EF4444" radius={[4, 4, 0, 0]} name="overdue" />
-          </BarChart>
+            <Line
+              type="monotone"
+              dataKey="pending"
+              name="Pendentes"
+              stroke="#93C5FD"
+              strokeWidth={2}
+              dot={{ r: 4, fill: "#93C5FD", strokeWidth: 0 }}
+              activeDot={{ r: 6 }}
+            />
+          </LineChart>
         </ResponsiveContainer>
       )}
     </div>
