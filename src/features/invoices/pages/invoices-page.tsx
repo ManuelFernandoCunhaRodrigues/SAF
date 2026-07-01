@@ -13,8 +13,10 @@ import { useUpdateInvoice } from "../hooks/use-update-invoice";
 import { useUpdateInvoiceStatus } from "../hooks/use-update-invoice-status";
 import { useDeleteInvoice } from "../hooks/use-delete-invoice";
 import { useGenerateInvoicePix } from "../hooks/use-generate-invoice-pix";
+import { useGenerateInvoiceBoleto } from "../hooks/use-generate-invoice-boleto";
 import { InvoiceForm } from "../components/invoice-form";
 import { InvoicePixDialog } from "../components/invoice-pix-dialog";
+import { InvoiceBoletoDialog } from "../components/invoice-boleto-dialog";
 import type { Invoice, InvoiceStatus } from "../types/invoice";
 import type { InvoiceFormData } from "../schemas/invoice-schema";
 
@@ -144,6 +146,7 @@ export function InvoicesPage() {
   const [createOpen, setCreateOpen]   = useState(false);
   const [editInvoice, setEditInvoice] = useState<Invoice | null>(null);
   const [pixInvoice, setPixInvoice]   = useState<Invoice | null>(null);
+  const [boletoInvoice, setBoletoInvoice] = useState<Invoice | null>(null);
 
   const activeStatus = statusFilter !== "Todas" ? statusFilter as InvoiceStatus : undefined;
 
@@ -161,6 +164,7 @@ export function InvoicesPage() {
   const statusMutation = useUpdateInvoiceStatus();
   const deleteMutation = useDeleteInvoice();
   const pixMutation    = useGenerateInvoicePix();
+  const boletoMutation = useGenerateInvoiceBoleto();
 
   /* handlers */
   function handleCreate(data: InvoiceFormData) {
@@ -208,6 +212,18 @@ export function InvoicesPage() {
     if (!open) {
       setPixInvoice(null);
       pixMutation.reset();
+    }
+  }
+
+  function handleOpenBoleto(invoice: Invoice) {
+    boletoMutation.reset();
+    setBoletoInvoice(invoice);
+  }
+
+  function handleCloseBoleto(open: boolean) {
+    if (!open) {
+      setBoletoInvoice(null);
+      boletoMutation.reset();
     }
   }
 
@@ -399,11 +415,19 @@ export function InvoicesPage() {
                       <div className="flex items-center justify-center gap-1">
                         <button
                           onClick={() => handleOpenPix(inv)}
-                          disabled={inv.status === "cancelled"}
+                          disabled={inv.status === "paid" || inv.status === "cancelled"}
                           className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 dark:text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                          title={inv.status === "cancelled" ? "Fatura cancelada" : "Gerar Pix"}
+                          title={inv.status === "paid" ? "Fatura já paga" : inv.status === "cancelled" ? "Fatura cancelada" : "Gerar Pix"}
                         >
                           <QrCode size={14} />
+                        </button>
+                        <button
+                          onClick={() => handleOpenBoleto(inv)}
+                          disabled={inv.status === "paid" || inv.status === "cancelled"}
+                          className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 dark:text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                          title={inv.status === "paid" ? "Fatura já paga" : inv.status === "cancelled" ? "Fatura cancelada" : "Gerar Boleto"}
+                        >
+                          <FileText size={14} />
                         </button>
                         <button
                           className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 dark:text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors"
@@ -500,6 +524,19 @@ export function InvoicesPage() {
           isLoading={pixMutation.isPending}
           errorMessage={pixMutation.errorMessage}
           onGeneratePix={() => pixMutation.mutate(pixInvoice.id)}
+        />
+      )}
+
+      {/* ── Dialog: Boleto ── */}
+      {boletoInvoice && (
+        <InvoiceBoletoDialog
+          open={!!boletoInvoice}
+          onOpenChange={handleCloseBoleto}
+          invoice={boletoInvoice}
+          boletoData={boletoMutation.data ?? null}
+          isLoading={boletoMutation.isPending}
+          errorMessage={boletoMutation.errorMessage}
+          onGenerateBoleto={() => boletoMutation.mutate(boletoInvoice.id)}
         />
       )}
 

@@ -40,10 +40,21 @@ export type UpdateInvoiceData = Partial<{
 }>;
 
 export type InvoicePixData = {
-  invoiceId: string;
   txid: string;
   pixCopyPaste: string;
   qrCodeImage: string;
   amount: number;
   expiresAt: string | null;
+};
+
+export type InvoiceBoletoData = {
+  chargeId: string;
+  digitableLine: string;
+  barcode?: string | null;
+  boletoUrl?: string | null;
+  pdfUrl?: string | null;
+  paymentUrl?: string | null;
+  status: string;
+  amount: number;
+  expiresAt: string;
 };

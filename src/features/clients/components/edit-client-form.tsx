@@ -40,6 +40,12 @@ export function EditClientForm({ client, onSuccess, onCancel }: EditClientFormPr
       email: client.email ?? "",
       phone: client.phone ?? "",
       document: client.document ?? "",
+      street: client.street ?? "",
+      number: client.number ?? "",
+      neighborhood: client.neighborhood ?? "",
+      zipcode: client.zipcode ?? "",
+      city: client.city ?? "",
+      state: client.state ?? "",
       status: client.status,
     },
   });
@@ -89,7 +95,7 @@ export function EditClientForm({ client, onSuccess, onCancel }: EditClientFormPr
         />
 
         {/* Telefone + Documento */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="phone"
@@ -116,6 +122,104 @@ export function EditClientForm({ client, onSuccess, onCancel }: EditClientFormPr
                 </FormLabel>
                 <FormControl>
                   <Input placeholder="000.000.000-00" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="street"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                  Rua
+                </FormLabel>
+                <FormControl>
+                  <Input placeholder="Rua ou avenida" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="number"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                  Número
+                </FormLabel>
+                <FormControl>
+                  <Input placeholder="123" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="neighborhood"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                  Bairro
+                </FormLabel>
+                <FormControl>
+                  <Input placeholder="Bairro" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="zipcode"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                  CEP
+                </FormLabel>
+                <FormControl>
+                  <Input placeholder="00000-000" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="city"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                  Cidade
+                </FormLabel>
+                <FormControl>
+                  <Input placeholder="Cidade" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="state"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                  Estado
+                </FormLabel>
+                <FormControl>
+                  <Input placeholder="UF" maxLength={2} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

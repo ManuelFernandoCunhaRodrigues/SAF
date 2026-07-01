@@ -91,10 +91,14 @@ export function InvoiceForm({
                 <SelectContent>
                   {clients.map((client) => (
                     <SelectItem key={client.id} value={client.id}>
-                      {client.name}
-                      {client.email && (
-                        <span className="text-zinc-400 ml-1.5 text-xs">— {client.email}</span>
-                      )}
+                      <span className="flex items-baseline gap-1.5 min-w-0">
+                        <span className="truncate max-w-[180px]">{client.name}</span>
+                        {client.email && (
+                          <span className="text-zinc-400 text-xs shrink-0 truncate max-w-[160px]">
+                            — {client.email}
+                          </span>
+                        )}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>

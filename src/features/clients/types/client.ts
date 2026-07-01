@@ -7,6 +7,12 @@ export type Client = {
   email: string | null;
   phone: string | null;
   document: string | null;
+  street: string | null;
+  number: string | null;
+  neighborhood: string | null;
+  zipcode: string | null;
+  city: string | null;
+  state: string | null;
   type: ClientType;
   status: ClientStatus;
   createdAt: string;
@@ -18,6 +24,12 @@ export type CreateClientData = {
   email: string;
   phone: string;
   document: string;
+  street?: string;
+  number?: string;
+  neighborhood?: string;
+  zipcode?: string;
+  city?: string;
+  state?: string;
   status?: ClientStatus;
 };
 

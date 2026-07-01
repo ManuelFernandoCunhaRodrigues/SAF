@@ -1,0 +1,1 @@
+import{t as e}from"./useQuery-BiCV-Kb5.js";import{i as t}from"./client-service-Cil0ksqj.js";function n(n){return e({queryKey:[`clients`,n||`all`],queryFn:()=>t(n)})}export{n as t};

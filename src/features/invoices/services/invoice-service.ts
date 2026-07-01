@@ -3,6 +3,7 @@ import type {
   CreateInvoiceData,
   Invoice,
   InvoiceApiResponse,
+  InvoiceBoletoData,
   InvoicePixData,
   InvoiceStatus,
   UpdateInvoiceData,
@@ -48,8 +49,11 @@ export async function deleteInvoice(id: string): Promise<void> {
 }
 
 export async function generateInvoicePix(invoiceId: string): Promise<InvoicePixData> {
-  const response = await api.post<{ success: boolean; data: InvoicePixData }>(
-    `/invoices/${invoiceId}/pix`
-  );
-  return response.data.data;
+  const response = await api.post<InvoicePixData>(`/invoices/${invoiceId}/pix`);
+  return response.data;
+}
+
+export async function generateInvoiceBoleto(invoiceId: string): Promise<InvoiceBoletoData> {
+  const response = await api.post<InvoiceBoletoData>(`/invoices/${invoiceId}/boleto`);
+  return response.data;
 }
